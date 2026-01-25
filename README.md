@@ -1,24 +1,29 @@
 # Car System PHP
 
-A PHP-based car rental/management system.
+A comprehensive PHP-based car rental and management system, serving as **Part 2 - Integration Car System**. This project integrates enhancement features derived from the original Java command-line interface application, adapted and expanded for a web environment.
 
-## Setup
+## Overview
 
-1.  Clone the repository.
-2.  Import the database (if SQL file provided).
-3.  Configure `db_connection.php`.
-4.  Run via XAMPP or similar web server.
+This system allows users to browse cars, book test drives, compare models, and calculate loans, while administrators can manage the entire fleet, user base, and appointments.
 
 ## Features
 
--   Admin Dashboard
--   User Dashboard
--   Car Management
--   Test Drive Booking
+### Core Features
+-   **User & Admin Dashboards**: Distinct interfaces for different user roles.
+-   **Car Management**: Admin can add, edit, and delete vehicles.
+-   **Test Drive Booking**: Users can schedule test drives; Admins can approve/reject them.
+
+### Enhancement Features (Integration Part 2)
+-   **Loan Calculator**: Estimate monthly payments based on car price, interest rate, and loan tenure.
+-   **Compare Models**: Side-by-side comparison of different car specifications.
+-   **User Reviews**: Users can leave ratings and reviews for cars.
+-   **Loan History**: Track calculated loan scenarios.
+-   **Advanced Admin Management**:
+    -   Manage Users (Delete/View)
+    -   Manage Appointments (Update Status)
+    -   View Reviews
 
 ## Integration Notes
 
-This project is **Part 2 - Integration Car System** with enhancement features derived from the Java version. It is currently in **Early Development**.
-
-You can view the original Java version here: [Car Loan Calculation System (Java)](https://github.com/jaaspring/car-loan-calculation-system-java)
+This project corresponds to the integration phase, bringing features from the standalone logic into a web-based structure. It builds upon the concepts found in the [Car Loan Calculation System (Java)](https://github.com/jaaspring/car-loan-calculation-system-java).
 
