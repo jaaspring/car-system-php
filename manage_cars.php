@@ -21,9 +21,11 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
-        $success = "Car deleted successfully.";
+        header("Location: manage_cars.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
+        exit();
     } else {
-        $error = "Failed to delete car.";
+        header("Location: manage_cars.php?toast_msg=" . urlencode("Failed to delete car") . "&toast_type=error");
+        exit();
     }
     $stmt->close();
 }
@@ -106,9 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $success = $id ? "Car updated successfully." : "New car added successfully.";
+            $message = $id ? "Successfully Update" : "Successfully Add";
+            header("Location: manage_cars.php?toast_msg=" . urlencode($message) . "&toast_type=success");
+            exit();
         } else {
-            $error = "Database error: " . $stmt->error;
+            header("Location: manage_cars.php?toast_msg=" . urlencode("Database error: " . $stmt->error) . "&toast_type=error");
+            exit();
         }
         $stmt->close();
     }
@@ -148,6 +153,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Cars</title>
+<link rel="stylesheet" href="toast.css">
 
 <style>
 * {
@@ -256,12 +262,30 @@ th {
 }
 
 .actions a {
-    margin: 0 5px;
-    font-weight: bold;
+    display: inline-block;
+    margin: 0 4px;
+    padding: 6px 16px;
     text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+    border-radius: 18px;
+    color: #fff;
+    transition: all 0.2s ease;
 }
-.actions .edit { color: #2980b9; }
-.actions .delete { color: #c0392b; }
+.actions .edit { 
+    background: #2980b9;
+}
+.actions .edit:hover { 
+    background: #1f6391;
+    transform: scale(1.05);
+}
+.actions .delete { 
+    background: #e74c3c;
+}
+.actions .delete:hover { 
+    background: #c0392b;
+    transform: scale(1.05);
+}
 
 form {
     margin-top: 30px;
@@ -311,8 +335,11 @@ input {
 
 <h2>MANAGE CARS</h2>
 
-<?php if ($error): ?><div class="alert error"><?= $error ?></div><?php endif; ?>
-<?php if ($success): ?><div class="alert success"><?= $success ?></div><?php endif; ?>
+<?php if (isset($_GET['toast_msg'])): ?>
+    <div class="alert <?= $_GET['toast_type'] === 'success' ? 'success' : 'error' ?>">
+        <?= htmlspecialchars($_GET['toast_msg']) ?>
+    </div>
+<?php endif; ?>
 
 <?php 
 // DETERMINE VIEW MODE: 'form' or 'list'
@@ -366,8 +393,8 @@ if (isset($_GET['add']) || $editCar) {
         <td><?= htmlspecialchars($row['price']) ?></td>
         <td><?= htmlspecialchars($row['engine']) ?></td>
         <td class="actions">
-            <a class="edit" href="?edit=<?= $row['id'] ?>">Edit</a>
-            <a class="delete" href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this car?')">Delete</a>
+            <a class="edit" href="#" onclick="confirmEdit(<?= $row['id'] ?>)">Edit</a>
+            <a class="delete" href="#" onclick="confirmDelete(<?= $row['id'] ?>)">Delete</a>
         </td>
     </tr>
     <?php endwhile; ?>
@@ -376,7 +403,7 @@ if (isset($_GET['add']) || $editCar) {
 <?php else: ?>
     <!-- FORM VIEW -->
     
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="carForm">
     <h3><?= $editCar ? "Edit Car" : "Add New Car" ?></h3>
 
     <input type="hidden" name="id" value="<?= $editCar['id'] ?? '' ?>">
@@ -439,7 +466,11 @@ if (isset($_GET['add']) || $editCar) {
     </div>
 
     <br>
-    <button class="btn green"><?= $editCar ? "Update Car" : "Add Car" ?></button>
+    <?php if ($editCar): ?>
+        <button type="button" class="btn green" onclick="confirmUpdate()"><?= "Update Car" ?></button>
+    <?php else: ?>
+        <button type="submit" class="btn green"><?= "Add Car" ?></button>
+    <?php endif; ?>
     <!-- Back button now cancels and returns to list view -->
     <a href="manage_cars.php" class="btn">Back</a>
     </form>
@@ -448,6 +479,29 @@ if (isset($_GET['add']) || $editCar) {
 
 </div>
 </div>
+
+<?php include('confirm_modal.php'); ?>
+
+<script src="toast.js"></script>
+<script>
+function confirmEdit(carId) {
+    showConfirm('Are you sure to edit?', function() {
+        window.location.href = '?edit=' + carId;
+    });
+}
+
+function confirmUpdate() {
+    showConfirm('Are you sure to update?', function() {
+        document.getElementById('carForm').submit();
+    });
+}
+
+function confirmDelete(carId) {
+    showConfirm('Are you sure you want to delete', function() {
+        window.location.href = '?delete=' + carId;
+    });
+}
+</script>
 
 </body>
 </html>

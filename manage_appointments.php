@@ -22,7 +22,7 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param("i", $del_id);
     $stmt->execute();
     $stmt->close();
-    header("Location: manage_appointments.php");
+    header("Location: manage_appointments.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
     exit();
 }
 
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $stmt->bind_param("si", $status, $appointment_id);
     $stmt->execute();
     $stmt->close();
-    header("Location: manage_appointments.php");
+    header("Location: manage_appointments.php?toast_msg=" . urlencode("Successfully Update") . "&toast_type=success");
     exit();
 }
 
@@ -281,6 +281,32 @@ tr:hover { background: #f1f1f1; }
     color: #000;
     margin-top: 4px;
 }
+
+/* FLEX ALIGNMENT FOR TABLE CELLS */
+.action-cell {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.details-cell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* SUCCESS ALERT */
+.alert {
+    padding: 12px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+}
+.alert.success { background:#2ecc71; color:#fff; }
+.alert.error { background:#e74c3c; color:#fff; }
 </style>
 </head>
 
@@ -293,6 +319,12 @@ tr:hover { background: #f1f1f1; }
 <div class="container">
 
 <h1>Manage Test Drive Appointments</h1>
+
+<?php if (isset($_GET['toast_msg'])): ?>
+    <div class="alert <?= $_GET['toast_type'] === 'success' ? 'success' : 'error' ?>">
+        <?= htmlspecialchars($_GET['toast_msg']) ?>
+    </div>
+<?php endif; ?>
 
 <form class="filter-form" method="GET">
     <input type="date" name="date" value="<?= htmlspecialchars($date_filter) ?>">
@@ -358,23 +390,34 @@ tr:hover { background: #f1f1f1; }
 
     <!-- UPDATE STATUS -->
     <td>
-        <form method="POST" style="display:inline;">
+        <form method="POST" class="action-cell" id="updateForm_<?= $row['id'] ?>">
             <input type="hidden" name="appointment_id" value="<?= $row['id'] ?>">
-            <select name="status" style="padding: 6px; border-radius: 5px; border: 1px solid #ccc; margin-right: 5px;">
+            <select name="status" style="padding: 6px; border-radius: 5px; border: 1px solid #ccc;">
                 <option value="Pending" <?= $row['status']=='Pending'?'selected':'' ?>>Pending</option>
                 <option value="Completed" <?= $row['status']=='Completed'?'selected':'' ?>>Completed</option>
                 <option value="Cancelled" <?= $row['status']=='Cancelled'?'selected':'' ?>>Cancelled</option>
             </select>
-            <button type="submit" name="update_status" class="table-btn black">Save</button>
+            <button type="button" 
+                    onclick="confirmUpdate(<?= $row['id'] ?>)" 
+                    class="table-btn black">
+                Save
+            </button>
+            <input type="hidden" name="update_status" value="1">
         </form>
     </td>
 
-    <!-- VIEW BUTTON -->
-    <td>
+    <!-- VIEW & DELETE BUTTONS -->
+    <td class="details-cell">
         <button type="button" 
                 onclick='openModal(<?= json_encode($row) ?>)'
                 class="table-btn green">
             View
+        </button>
+        <button type="button" 
+                onclick="confirmDelete(<?= $row['id'] ?>)"
+                class="table-btn"
+                style="background: #c0392b;">
+            Delete
         </button>
     </td>
 
@@ -432,6 +475,22 @@ window.onclick = function(event) {
     if (event.target == modal) {
         modal.style.display = "none";
     }
+}
+</script>
+
+<?php include('confirm_modal.php'); ?>
+
+<script>
+function confirmUpdate(id) {
+    showConfirm('Are you sure to update?', function() {
+        document.getElementById('updateForm_' + id).submit();
+    });
+}
+
+function confirmDelete(appointmentId) {
+    showConfirm('Are you sure you want to delete', function() {
+        window.location.href = '?delete=' + appointmentId;
+    });
 }
 </script>
 

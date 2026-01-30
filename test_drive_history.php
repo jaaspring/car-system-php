@@ -260,7 +260,7 @@ body.modal-open .container {
     </div>
     <?php elseif ($row['status']==='Pending'): ?>
     <div class="ticket-footer">
-        <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+        <form method="POST" class="cancel-form" data-booking-id="<?= $row['id'] ?>">
             <input type="hidden" name="cancel_id" value="<?= $row['id'] ?>">
             <button class="btn" style="background:#c0392b">Cancel Booking</button>
         </form>
@@ -303,7 +303,46 @@ function goHome() {
 function goTestDrive() {
     window.location.href = "test_drive.php";
 }
+
+// Cancel modal
+let cancelFormToSubmit = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelForms = document.querySelectorAll('.cancel-form');
+    cancelForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            cancelFormToSubmit = this;
+            document.getElementById('cancelModal').style.display = 'flex';
+        });
+    });
+});
+
+function closeCancelModal() {
+    document.getElementById('cancelModal').style.display = 'none';
+    cancelFormToSubmit = null;
+}
+
+function confirmCancel() {
+    if (cancelFormToSubmit) {
+        cancelFormToSubmit.submit();
+    }
+}
 </script>
+
+<!-- CANCEL CONFIRMATION MODAL -->
+<div class="modal-overlay" id="cancelModal">
+    <div class="modal">
+        <h3>Cancel Booking</h3>
+        <p>Are you sure you want to cancel this booking?</p>
+        <div class="modal-buttons">
+            <button type="button" class="btn grey" onclick="closeCancelModal()">No, Keep It</button>
+            <button type="button" class="btn green" onclick="confirmCancel()">Yes, Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
 <script src="toast.js"></script>
 
 </body>

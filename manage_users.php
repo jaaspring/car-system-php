@@ -17,7 +17,7 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $stmt->close();
-    header("Location: manage_users.php");
+    header("Location: manage_users.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
     exit();
 }
 
@@ -71,7 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($stmt->execute()) {
         // Success
-        header("Location: manage_users.php"); // Redirect to clear POST
+        $message = $id ? "Successfully Update" : "Successfully Add";
+        header("Location: manage_users.php?toast_msg=" . urlencode($message) . "&toast_type=success");
         exit();
     }
     $stmt->close();
@@ -112,6 +113,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Users</title>
+<link rel="stylesheet" href="toast.css">
 
 <!-- Keeping existing CSS -->
 <style>
@@ -237,12 +239,30 @@ th {
 }
 
 .actions a {
-    margin: 0 5px;
+    display: inline-block;
+    margin: 0 4px;
+    padding: 6px 16px;
     text-decoration: none;
     font-weight: bold;
+    font-size: 13px;
+    border-radius: 18px;
+    color: #fff;
+    transition: all 0.2s ease;
 }
-.actions .edit { color: #2980b9; }
-.actions .delete { color: #e74c3c; }
+.actions .edit { 
+    background: #2980b9;
+}
+.actions .edit:hover { 
+    background: #1f6391;
+    transform: scale(1.05);
+}
+.actions .delete { 
+    background: #e74c3c;
+}
+.actions .delete:hover { 
+    background: #c0392b;
+    transform: scale(1.05);
+}
 
 /* ===== FORM ===== */
 /* Reusing grid style from manage_cars for consistency */
@@ -265,6 +285,17 @@ th {
     border-radius: 5px;
     border: 1px solid #ccc;
 }
+
+/* SUCCESS ALERT */
+.alert {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+}
+.alert.success { background:#2ecc71; color:#fff; }
+.alert.error { background:#e74c3c; color:#fff; }
 </style>
 </head>
 
@@ -276,6 +307,12 @@ th {
 <div class="container">
 
 <h1>Manage Users</h1>
+
+<?php if (isset($_GET['toast_msg'])): ?>
+    <div class="alert <?= $_GET['toast_type'] === 'success' ? 'success' : 'error' ?>">
+        <?= htmlspecialchars($_GET['toast_msg']) ?>
+    </div>
+<?php endif; ?>
 
 <?php 
 // DETERMINE VIEW MODE
@@ -326,10 +363,10 @@ if (isset($_GET['add']) || $editUser) {
         <td><?= htmlspecialchars($u['phone']) ?></td>
         <td><?= htmlspecialchars($u['role']) ?></td>
         <td class="actions">
-            <a class="edit" href="?edit=<?= $u['id'] ?>">Edit</a>
+            <a class="edit" href="#" onclick="confirmEdit(<?= $u['id'] ?>)">Edit</a>
             <a class="delete"
-               href="?delete=<?= $u['id'] ?>"
-               onclick="return confirm('Delete this user?')">
+               href="#"
+               onclick="confirmDelete(<?= $u['id'] ?>)">
                Delete
             </a>
         </td>
@@ -342,7 +379,7 @@ if (isset($_GET['add']) || $editUser) {
 
 <?php else: ?>
     <!-- FORM VIEW -->
-    <form method="POST">
+    <form method="POST" id="userForm">
         <h3><?= $editUser ? "Edit User" : "Add New User" ?></h3>
         <input type="hidden" name="id" value="<?= $editUser['id'] ?? '' ?>">
 
@@ -379,13 +416,40 @@ if (isset($_GET['add']) || $editUser) {
 
         <br>
         <div style="display:flex; gap:10px;">
-            <button class="btn green" type="submit"><?= $editUser ? "Update User" : "Add User" ?></button>
+            <?php if ($editUser): ?>
+                <button class="btn green" type="button" onclick="confirmUpdate()"><?= "Update User" ?></button>
+            <?php else: ?>
+                <button class="btn green" type="submit"><?= "Add User" ?></button>
+            <?php endif; ?>
             <a href="manage_users.php" class="btn">Back</a>
         </div>
     </form>
 <?php endif; ?>
 
 </div>
+
+<?php include('confirm_modal.php'); ?>
+
+<script src="toast.js"></script>
+<script>
+function confirmEdit(userId) {
+    showConfirm('Are you sure to edit?', function() {
+        window.location.href = '?edit=' + userId;
+    });
+}
+
+function confirmUpdate() {
+    showConfirm('Are you sure to update?', function() {
+        document.getElementById('userForm').submit();
+    });
+}
+
+function confirmDelete(userId) {
+    showConfirm('Are you sure you want to delete', function() {
+        window.location.href = '?delete=' + userId;
+    });
+}
+</script>
 
 </body>
 </html>

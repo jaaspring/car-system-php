@@ -18,7 +18,7 @@ if (isset($_GET['delete'])) {
     $stmt = mysqli_prepare($conn, "DELETE FROM loan_history WHERE id = ? AND user_id = ?");
     mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
     mysqli_stmt_execute($stmt);
-    header("Location: loan_history.php");
+    header("Location: loan_history.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
     exit();
 }
 
@@ -187,6 +187,17 @@ th {
 .modal .btn {
     flex: 1;
 }
+
+/* SUCCESS ALERT */
+.alert {
+    padding: 12px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+}
+.alert.success { background:#2ecc71; color:#fff; }
+.alert.error { background:#e74c3c; color:#fff; }
 </style>
 </head>
 
@@ -197,6 +208,12 @@ th {
 <div class="container">
 
     <h2>CALCULATION HISTORY</h2>
+
+    <?php if (isset($_GET['toast_msg'])): ?>
+        <div class="alert <?= $_GET['toast_type'] === 'success' ? 'success' : 'error' ?>">
+            <?= htmlspecialchars($_GET['toast_msg']) ?>
+        </div>
+    <?php endif; ?>
 
     <div class="top-bar">
         <a href="loan_calculator.php" class="btn green">Add New</a>
@@ -231,8 +248,8 @@ th {
                 <td><?= number_format($row['interest_rate'], 2) ?>%</td>
                 <td>RM <?= number_format($row['monthly_installment'], 2) ?></td>
                 <td class="actions">
-                    <a href="?delete=<?= $row['id'] ?>"
-                       onclick="return confirm('Delete this record?')">Delete</a>
+                    <a href="#"
+                       onclick="event.preventDefault(); confirmDelete(<?= $row['id'] ?>)">Delete</a>
                 </td>
             </tr>
             <?php endwhile; ?>
@@ -278,7 +295,15 @@ function goLoanCalculator() {
 function goDashboard() {
     window.location.href = "user_dashboard.php";
 }
+
+function confirmDelete(recordId) {
+    showConfirm('Are you sure you want to delete', function() {
+        window.location.href = '?delete=' + recordId;
+    });
+}
 </script>
+
+<?php include('confirm_modal.php'); ?>
 
 </body>
 </html>
