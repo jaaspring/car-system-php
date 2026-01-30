@@ -42,7 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $chassis      = trim($_POST['chassis']);
     $performance  = trim($_POST['performance']);
     $paint_type   = trim($_POST['paint_type']);
-    $image_path   = trim($_POST['image_path']);
+    
+    // Handle Image Upload
+    $imageData = null;
+    if (isset($_FILES['car_image']) && $_FILES['car_image']['error'] === UPLOAD_ERR_OK) {
+        $imageData = file_get_contents($_FILES['car_image']['tmp_name']);
+    }
 
     if (
         empty($model) || empty($variant) || empty($price) ||
@@ -54,33 +59,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
 
         if ($id) {
-            $stmt = $conn->prepare(
-                "UPDATE car_details 
-                 SET model=?, variant=?, price=?, engine=?, transmission=?, chassis=?, performance=?, paint_type=?, image=? 
-                 WHERE id=?"
-            );
-            $stmt->bind_param(
-                "sssssssssi",
-                $model, $variant, $price, $engine, $transmission,
-                $chassis, $performance, $paint_type, $image_path, $id
-            );
+            // Update
+            if ($imageData !== null) {
+                // Update with new image
+                $stmt = $conn->prepare(
+                    "UPDATE car_details 
+                     SET model=?, variant=?, price=?, engine=?, transmission=?, chassis=?, performance=?, paint_type=?, image=? 
+                     WHERE id=?"
+                );
+                $null = null;
+                $stmt->bind_param(
+                    "ssssssssbi",
+                    $model, $variant, $price, $engine, $transmission,
+                    $chassis, $performance, $paint_type, $null, $id
+                );
+                $stmt->send_long_data(8, $imageData);
+            } else {
+                // Update without changing image
+                $stmt = $conn->prepare(
+                    "UPDATE car_details 
+                     SET model=?, variant=?, price=?, engine=?, transmission=?, chassis=?, performance=?, paint_type=? 
+                     WHERE id=?"
+                );
+                $stmt->bind_param(
+                    "ssssssssi",
+                    $model, $variant, $price, $engine, $transmission,
+                    $chassis, $performance, $paint_type, $id
+                );
+            }
         } else {
+            // Insert
             $stmt = $conn->prepare(
                 "INSERT INTO car_details 
                  (model, variant, price, engine, transmission, chassis, performance, paint_type, image)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
+            $null = null;
             $stmt->bind_param(
-                "sssssssss",
+                "ssssssssb",
                 $model, $variant, $price, $engine, $transmission,
-                $chassis, $performance, $paint_type, $image_path
+                $chassis, $performance, $paint_type, $null
             );
+            if ($imageData !== null) {
+                $stmt->send_long_data(8, $imageData);
+            }
         }
 
         if ($stmt->execute()) {
             $success = $id ? "Car updated successfully." : "New car added successfully.";
         } else {
-            $error = "Database error.";
+            $error = "Database error: " . $stmt->error;
         }
         $stmt->close();
     }
@@ -89,7 +117,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* =========================
    FETCH CARS
    ========================= */
-$result = $conn->query("SELECT * FROM car_details ORDER BY id DESC");
+$sort = $_GET['sort'] ?? 'latest';
+$orderBy = "ORDER BY id DESC"; // Default
+
+switch ($sort) {
+    case 'oldest': $orderBy = "ORDER BY id ASC"; break;
+    case 'az':     $orderBy = "ORDER BY model ASC"; break;
+    case 'za':     $orderBy = "ORDER BY model DESC"; break;
+    default:       $orderBy = "ORDER BY id DESC"; break;
+}
+
+$result = $conn->query("SELECT * FROM car_details $orderBy");
 
 /* =========================
    FETCH CAR FOR EDIT
@@ -253,28 +291,21 @@ input {
 }
 .btn.green { background:#2ecc71; }
 .btn.exit { background:#c0392b; }
+
+.form-grid label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton">
-        </div>
-        <nav class="nav-menu">
-            <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
-            <a href="manage_cars.php" class="nav-link">Manage Cars</a>
-            <a href="manage_users.php" class="nav-link">Manage Users</a>
-            <a href="manage_appointments.php" class="nav-link">Manage Appointments</a>
-            <a href="admin_view_reviews.php" class="nav-link">Manage Reviews</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
+<!-- ===== MAIN CONTENT ===== -->
 <div class="main-content">
 <div class="container">
 
@@ -283,61 +314,137 @@ input {
 <?php if ($error): ?><div class="alert error"><?= $error ?></div><?php endif; ?>
 <?php if ($success): ?><div class="alert success"><?= $success ?></div><?php endif; ?>
 
-<table>
-<tr>
-    <th>ID</th>
-    <th>Model</th>
-    <th>Variant</th>
-    <th>Price</th>
-    <th>Engine</th>
-    <th>Transmission</th>
-    <th>Chassis</th>
-    <th>Performance</th>
-    <th>Paint</th>
-    <th>Actions</th>
-</tr>
+<?php 
+// DETERMINE VIEW MODE: 'form' or 'list'
+$viewMode = 'list';
+if (isset($_GET['add']) || $editCar) {
+    $viewMode = 'form';
+}
+?>
 
-<?php while ($row = $result->fetch_assoc()): ?>
-<tr>
-    <td><?= $row['id'] ?></td>
-    <td><?= htmlspecialchars($row['model']) ?></td>
-    <td><?= htmlspecialchars($row['variant']) ?></td>
-    <td><?= htmlspecialchars($row['price']) ?></td>
-    <td><?= htmlspecialchars($row['engine']) ?></td>
-    <td><?= htmlspecialchars($row['transmission']) ?></td>
-    <td><?= htmlspecialchars($row['chassis']) ?></td>
-    <td><?= htmlspecialchars($row['performance']) ?></td>
-    <td><?= htmlspecialchars($row['paint_type']) ?></td>
-    <td class="actions">
-        <a class="edit" href="?edit=<?= $row['id'] ?>">Edit</a>
-        <a class="delete" href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this car?')">Delete</a>
-    </td>
-</tr>
-<?php endwhile; ?>
-</table>
+<?php if ($viewMode === 'list'): ?>
+    <!-- LIST VIEW -->
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <!-- SORT FILTER -->
+        <form method="GET" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+            <label style="margin:0; font-weight:bold;">Sort By:</label>
+            <select name="sort" onchange="this.form.submit()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="latest" <?= ($_GET['sort'] ?? '') == 'latest' ? 'selected' : '' ?>>Latest</option>
+                <option value="oldest" <?= ($_GET['sort'] ?? '') == 'oldest' ? 'selected' : '' ?>>Oldest</option>
+                <option value="az" <?= ($_GET['sort'] ?? '') == 'az' ? 'selected' : '' ?>>A-Z (Model)</option>
+                <option value="za" <?= ($_GET['sort'] ?? '') == 'za' ? 'selected' : '' ?>>Z-A (Model)</option>
+            </select>
+        </form>
 
-<form method="post">
-<h3><?= $editCar ? "Edit Car" : "Add New Car" ?></h3>
+        <a href="?add=1" class="btn green" style="text-decoration:none;">+ Add New Car</a>
+    </div>
 
-<input type="hidden" name="id" value="<?= $editCar['id'] ?? '' ?>">
+    <table>
+    <tr>
+        <th>ID</th>
+        <th>Image</th>
+        <th>Model</th>
+        <th>Variant</th>
+        <th>Price</th>
+        <th>Engine</th>
+        <th>Actions</th>
+    </tr>
 
-<div class="form-grid">
-<input name="model" placeholder="Model" value="<?= $editCar['model'] ?? '' ?>">
-<input name="variant" placeholder="Variant" value="<?= $editCar['variant'] ?? '' ?>">
-<input name="price" placeholder="Price" value="<?= $editCar['price'] ?? '' ?>">
-<input name="engine" placeholder="Engine" value="<?= $editCar['engine'] ?? '' ?>">
-<input name="transmission" placeholder="Transmission" value="<?= $editCar['transmission'] ?? '' ?>">
-<input name="chassis" placeholder="Chassis" value="<?= $editCar['chassis'] ?? '' ?>">
-<input name="performance" placeholder="Performance" value="<?= $editCar['performance'] ?? '' ?>">
-<input name="paint_type" placeholder="Paint Type" value="<?= $editCar['paint_type'] ?? 'Solid' ?>">
-<input name="image_path" placeholder="Image Path (optional)">
-</div>
+    <?php while ($row = $result->fetch_assoc()): ?>
+    <tr>
+        <td><?= $row['id'] ?></td>
+        <td>
+            <?php if (!empty($row['image'])): ?>
+                <img src="display_image.php?id=<?= $row['id'] ?>" style="width:100px; height:60px; object-fit:cover;">
+            <?php else: ?>
+                <span style="color:#888;">No Image</span>
+            <?php endif; ?>
+        </td>
+        <td><?= htmlspecialchars($row['model']) ?></td>
+        <td><?= htmlspecialchars($row['variant']) ?></td>
+        <td><?= htmlspecialchars($row['price']) ?></td>
+        <td><?= htmlspecialchars($row['engine']) ?></td>
+        <td class="actions">
+            <a class="edit" href="?edit=<?= $row['id'] ?>">Edit</a>
+            <a class="delete" href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this car?')">Delete</a>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+    </table>
 
-<br>
-<button class="btn green"><?= $editCar ? "Update Car" : "Add Car" ?></button>
-<a href="admin_dashboard.php" class="btn">Back</a>
-<a href="logout.php" class="btn exit">Exit</a>
-</form>
+<?php else: ?>
+    <!-- FORM VIEW -->
+    
+    <form method="post" enctype="multipart/form-data">
+    <h3><?= $editCar ? "Edit Car" : "Add New Car" ?></h3>
+
+    <input type="hidden" name="id" value="<?= $editCar['id'] ?? '' ?>">
+
+    <div class="form-grid">
+    
+    <div>
+        <label>Model</label>
+        <input name="model" placeholder="e.g. X50" value="<?= $editCar['model'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Variant</label>
+        <input name="variant" placeholder="e.g. 1.5T Standard" value="<?= $editCar['variant'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Price</label>
+        <input name="price" placeholder="e.g. RM 86,300" value="<?= $editCar['price'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Engine</label>
+        <input name="engine" placeholder="e.g. 1.5L Turbocharged" value="<?= $editCar['engine'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Transmission</label>
+        <input name="transmission" placeholder="e.g. 7-Speed DCT" value="<?= $editCar['transmission'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Chassis</label>
+        <input name="chassis" placeholder="e.g. SUV" value="<?= $editCar['chassis'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Performance</label>
+        <input name="performance" placeholder="e.g. Eco Mode" value="<?= $editCar['performance'] ?? '' ?>" required>
+    </div>
+
+    <div>
+        <label>Paint Type</label>
+        <input name="paint_type" placeholder="e.g. Solid" value="<?= $editCar['paint_type'] ?? 'Solid' ?>" required>
+    </div>
+
+    <!-- Image Upload Field -->
+    <div style="margin-top: 6px;">
+        <label>Car Image</label>
+        <?php if ($editCar && !empty($editCar['image'])): ?>
+            <div style="margin-bottom: 10px;">
+                <img src="display_image.php?id=<?= $editCar['id'] ?>" 
+                     style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #ccc;">
+            </div>
+            <p style="font-size:12px; margin-bottom:5px;">Change Image:</p>
+        <?php endif; ?>
+        <input type="file" name="car_image" accept="image/*" style="padding: 5px;">
+    </div>
+
+    </div>
+
+    <br>
+    <button class="btn green"><?= $editCar ? "Update Car" : "Add Car" ?></button>
+    <!-- Back button now cancels and returns to list view -->
+    <a href="manage_cars.php" class="btn">Back</a>
+    </form>
+
+<?php endif; ?>
 
 </div>
 </div>

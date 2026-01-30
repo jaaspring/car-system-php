@@ -36,14 +36,25 @@ if ($user_result->num_rows > 0) {
 $user_stmt->close();
 
 /* =========================
-   FETCH CAR MODELS
+   FETCH CAR MODELS + DETAILS
    ========================= */
-$car_models = [];
+// We need model, variant, price, and ID (for image)
+$car_data = []; // Stores details for JS: key="Model - Variant" val={price, imageId}
+$car_options = [];
+
 $res = $conn->query(
-    "SELECT model, variant FROM car_details ORDER BY model ASC"
+    "SELECT id, model, variant, price FROM car_details ORDER BY model ASC, variant ASC"
 );
+
 while ($row = $res->fetch_assoc()) {
-    $car_models[] = $row['model'] . " - " . $row['variant'];
+    $fullName = $row['model'] . " - " . $row['variant'];
+    $car_options[] = $fullName;
+    
+    $car_data[$fullName] = [
+        'price' => $row['price'],
+        'id'    => $row['id'], // Use this for display_image.php?id=...
+        'model' => $row['model'] // For fallback image path
+    ];
 }
 
 /* =========================
@@ -126,6 +137,8 @@ body {
     font-family: 'Century Gothic', sans-serif;
     background: radial-gradient(circle, #f4d77e, #c89a3d);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ===== DASHBOARD HEADER ===== */
@@ -173,18 +186,80 @@ body {
     background: #e63e00;
 }
 
-/* ===== FORM CARD ===== */
-.container {
-    max-width: 520px;
+/* ===== MAIN LAYOUT ===== */
+.main-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.container-wrapper {
+    display: flex;
     background: #fff;
-    margin: 60px auto;
-    padding: 35px;
     border-radius: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    overflow: hidden;
+    max-width: 1000px;
+    width: 100%;
+    min-height: 550px;
+}
+
+/* LEFT SIDE: IMAGE & DETAILS */
+.car-preview {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-right: 1px solid #eee;
+}
+
+.preview-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.car-display-img {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+    transition: transform 0.3s ease;
+    border-radius: 10px;
+}
+
+.car-price {
+    margin-top: 30px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #000;
+}
+
+.car-price-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #777;
+    margin-top: 5px;
+}
+
+/* RIGHT SIDE: FORM */
+.form-section {
+    flex: 1;
+    padding: 40px;
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    font-size: 26px;
+    text-align: center; 
 }
 
 .alert {
@@ -192,6 +267,7 @@ h1 {
     border-radius: 6px;
     margin-bottom: 15px;
     font-weight: bold;
+    text-align: center;
 }
 .alert.error { background: #e74c3c; color: #fff; }
 .alert.success { background: #2ecc71; color: #fff; }
@@ -200,12 +276,16 @@ label {
     font-weight: bold;
     margin-top: 15px;
     display:block;
+    font-size: 14px;
 }
 
 input, select {
     width: 100%;
     padding: 10px;
-    margin-top: 6px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
 }
 
 button {
@@ -218,6 +298,11 @@ button {
     color: #fff;
     font-weight: bold;
     cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #333;
 }
 
 .secondary-btn {
@@ -231,98 +316,188 @@ button {
     background: #000;
     color: #fff;
 }
+
+/* Responsive */
+@media (max-width: 800px) {
+    .container-wrapper {
+        flex-direction: column;
+    }
+    .car-preview, .form-section {
+        flex: none;
+        width: 100%;
+    }
+    .car-preview {
+        padding: 20px;
+        order: -1; /* Image on top */
+    }
+}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton">
+<?php include('navigation.php'); ?>
+
+<div class="main-content">
+
+    <div class="container-wrapper">
+        
+        <!-- LEFT: VISUALS -->
+        <div class="car-preview">
+            <div class="preview-title" id="previewTitle">Select Your Car</div>
+            
+            <!-- Default placeholder image -->
+            <img src="Images/proton.png" id="previewImg" class="car-display-img" alt="Selected Car">
+            
+            <div class="car-price" id="previewPrice"></div>
+            <div class="car-price-label" id="previewPriceLabel" style="display:none;">Starting Price</div>
         </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
+
+        <!-- RIGHT: FORM -->
+        <div class="form-section">
+            <h1>Book a Test Drive</h1>
+
+            <?php if ($error_message): ?>
+                <div class="alert error"><?= htmlspecialchars($error_message) ?></div>
+            <?php endif; ?>
+
+            <?php if ($success_message): ?>
+                <div class="alert success"><?= htmlspecialchars($success_message) ?></div>
+            <?php endif; ?>
+
+            <form method="POST">
+
+                <label>Car Model</label>
+                <select name="car_model" id="carModelSelect" required onchange="updatePreview()">
+                    <option value="">-- Select Car --</option>
+                    <?php 
+                    // Priority: POST (Error reload) -> GET (Link from other page)
+                    $sticky_model = $_POST['car_model'] ?? ($_GET['car'] ?? '');
+                    
+                    foreach ($car_options as $m): 
+                    ?>
+                        <option value="<?= htmlspecialchars($m) ?>"
+                            <?= ($m === $sticky_model) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($m) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <!-- Hidden inputs for pure specific visuals processing if needed later -->
+
+                <label>Name</label>
+                <input type="text" value="<?= htmlspecialchars($name) ?>" disabled>
+                <!-- Hidden fields if you actually need to submit these, but DB uses session user_id usually -->
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex:1;">
+                        <label>Phone</label>
+                        <input type="text" value="<?= htmlspecialchars($phone) ?>" disabled>
+                    </div>
+                    <div style="flex:1;">
+                        <label>Email</label>
+                        <input type="email" value="<?= htmlspecialchars($email) ?>" disabled>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex:1;">
+                        <label>Location</label>
+                        <select name="location" required>
+                            <option value="">Select</option>
+                            <option>Kuala Lumpur</option>
+                            <option>Penang</option>
+                            <option>Johor Bahru</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label>Showroom</label>
+                        <select name="showroom" required>
+                            <option value="">Select</option>
+                            <option>Showroom 1</option>
+                            <option>Showroom 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex:1;">
+                        <label>Date</label>
+                        <input type="date" name="date" required>
+                    </div>
+                    <div style="flex:1;">
+                        <label>Time</label>
+                        <select name="time" required>
+                            <option value="">Select</option>
+                            <option>09:00</option>
+                            <option>10:00</option>
+                            <option>11:00</option>
+                            <option>12:00</option>
+                            <option>14:00</option>
+                            <option>15:00</option>
+                            <option>16:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit">BOOK TEST DRIVE</button>
+
+                <a href="test_drive_history.php" style="text-decoration:none;">
+                    <button type="button" class="secondary-btn">
+                        View Test Drive History
+                    </button>
+                </a>
+
+            </form>
+        </div>
+        
     </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
 </div>
 
-<div class="container">
-<h1>Book Test Drive</h1>
+<script>
+// Pass PHP data to JS
+const carData = <?= json_encode($car_data); ?>;
 
-<?php if ($error_message): ?>
-    <div class="alert error"><?= htmlspecialchars($error_message) ?></div>
-<?php endif; ?>
+function updatePreview() {
+    const select = document.getElementById("carModelSelect");
+    const selectedValue = select.value;
+    
+    const titleEl = document.getElementById("previewTitle");
+    const imgEl = document.getElementById("previewImg");
+    const priceEl = document.getElementById("previewPrice");
+    const priceLabelEl = document.getElementById("previewPriceLabel");
 
-<?php if ($success_message): ?>
-    <div class="alert success"><?= htmlspecialchars($success_message) ?></div>
-<?php endif; ?>
+    if (selectedValue && carData[selectedValue]) {
+        // Data exists
+        const data = carData[selectedValue];
+        
+        titleEl.innerText = selectedValue;
+        priceEl.innerText = data.price;
+        priceLabelEl.style.display = "block";
+        
+        // Image Logic: Try ID first, then fallback to model name logic
+        // We use display_image.php for dynamic
+        imgEl.src = "display_image.php?id=" + data.id + "&t=" + new Date().getTime();
+        
+        // If display_image fails (no blob), we can set a fallback handling on error directly on the img tag if needed,
+        // but let's try to be smart. If the ID is valid, display_image usually returns something.
+        // We can add onerror to the image tag in HTML to fallback to standard folder path.
+        imgEl.onerror = function() {
+            this.src = "Images/" + data.model.toLowerCase() + ".png";
+        };
+        
+    } else {
+        // Reset
+        titleEl.innerText = "Select Your Car";
+        imgEl.src = "Images/proton.png";
+        priceEl.innerText = "";
+        priceLabelEl.style.display = "none";
+    }
+}
 
-<form method="POST">
-
-<label>Car Model</label>
-<select name="car_model" required>
-    <option value="">Select</option>
-    <?php foreach ($car_models as $m): ?>
-        <option value="<?= htmlspecialchars($m) ?>">
-            <?= htmlspecialchars($m) ?>
-        </option>
-    <?php endforeach; ?>
-</select>
-
-<label>Name</label>
-<input type="text" value="<?= htmlspecialchars($name) ?>" disabled>
-
-<label>Phone</label>
-<input type="text" value="<?= htmlspecialchars($phone) ?>" disabled>
-
-<label>Email</label>
-<input type="email" value="<?= htmlspecialchars($email) ?>" disabled>
-
-<label>Location</label>
-<select name="location" required>
-    <option value="">Select</option>
-    <option>Kuala Lumpur</option>
-    <option>Penang</option>
-    <option>Johor Bahru</option>
-</select>
-
-<label>Showroom</label>
-<select name="showroom" required>
-    <option value="">Select</option>
-    <option>Showroom 1</option>
-    <option>Showroom 2</option>
-</select>
-
-<label>Date</label>
-<input type="date" name="date" required>
-
-<label>Time</label>
-<select name="time" required>
-    <option value="">Select</option>
-    <option>09:00</option>
-    <option>10:00</option>
-    <option>11:00</option>
-</select>
-
-<button type="submit">BOOK TEST DRIVE</button>
-
-<a href="test_drive_history.php">
-    <button type="button" class="secondary-btn">
-        View Test Drive History
-    </button>
-</a>
-
-</form>
-</div>
+// Initialize on load (in case of sticky form or GET param)
+window.onload = updatePreview;
+</script>
 
 </body>
 </html>

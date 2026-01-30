@@ -34,6 +34,7 @@ $modelImages = [
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Models - Loan Calculator System</title>
+<link rel="stylesheet" href="toast.css">
 
 <style>
 * {
@@ -217,24 +218,7 @@ body {
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
-        </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
@@ -257,21 +241,17 @@ body {
         <?php endwhile; ?>
     </div>
 
-    <!-- BACK & EXIT BUTTONS -->
+    <!-- BACK BUTTON -->
     <div class="bottom-buttons">
         <a href="user_dashboard.php" class="btn btn-back">Back</a>
-        <a href="#" class="btn btn-exit" onclick="confirmExit()">Exit</a>
     </div>
 
 </div>
 
 <script>
-function confirmExit() {
-    if (confirm("Are you sure you want to exit?")) {
-        window.location.href = "logout.php";
-    }
-}
+// No exit function needed
 </script>
 
+<script src="toast.js"></script>
 </body>
 </html>

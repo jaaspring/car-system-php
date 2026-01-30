@@ -6,6 +6,14 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
+
+require_once __DIR__ . '/db_connection.php';
+
+// Fetch Counts
+$car_count = $conn->query("SELECT COUNT(*) FROM car_details")->fetch_row()[0];
+$user_count = $conn->query("SELECT COUNT(*) FROM users WHERE role='user'")->fetch_row()[0];
+$appt_count = $conn->query("SELECT COUNT(*) FROM test_drive WHERE status='Pending'")->fetch_row()[0];
+$appt_total = $conn->query("SELECT COUNT(*) FROM test_drive")->fetch_row()[0];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -167,22 +175,7 @@ body {
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
-        </div>
-        <nav class="nav-menu">
-            <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
-            <a href="manage_cars.php" class="nav-link">Manage Cars</a>
-            <a href="manage_users.php" class="nav-link">Manage Users</a>
-            <a href="manage_appointments.php" class="nav-link">Manage Appointments</a>
-            <a href="admin_view_reviews.php" class="nav-link">Manage Reviews</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <!-- MAIN -->
 <div class="main-content">
@@ -198,7 +191,10 @@ body {
             <div class="card-img">
                 <img src="Images/admin_manage_cars.png" alt="Manage Cars">
             </div>
-            <div class="card-title">MANAGE CARS</div>
+            <div class="card-title">
+                MANAGE CARS <br>
+                <span style="font-size:12px; color:#2ecc71; font-weight:normal;">Total: <?php echo $car_count; ?> Cars</span>
+            </div>
         </a>
 
         <!-- MANAGE USERS -->
@@ -206,7 +202,10 @@ body {
             <div class="card-img">
                 <img src="Images/admin_manage_users.png" alt="Manage Users">
             </div>
-            <div class="card-title">MANAGE USERS</div>
+            <div class="card-title">
+                MANAGE USERS <br>
+                <span style="font-size:12px; color:#3498db; font-weight:normal;">Total: <?php echo $user_count; ?> Users</span>
+            </div>
         </a>
 
         <!-- MANAGE APPOINTMENTS -->
@@ -214,7 +213,12 @@ body {
             <div class="card-img">
                 <img src="Images/admin_manage_appointments.png" alt="Manage Appointments">
             </div>
-            <div class="card-title">MANAGE APPOINTMENTS</div>
+            <div class="card-title">
+                MANAGE APPOINTMENTS <br>
+                <span style="font-size:12px; color:#e74c3c; font-weight:normal;">
+                    <?php echo $appt_count; ?> Pending / <?php echo $appt_total; ?> Total
+                </span>
+            </div>
         </a>
 
     </div>

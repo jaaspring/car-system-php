@@ -11,7 +11,7 @@ require_once __DIR__ . '/db_connection.php';
 /* =========================
    FETCH CAR DETAILS
    ========================= */
-$sql = "SELECT model, variant, price, engine, transmission, chassis, performance
+$sql = "SELECT id, model, variant, price, engine, transmission, chassis, performance
         FROM car_details
         ORDER BY id ASC";
 
@@ -29,7 +29,10 @@ while ($row = mysqli_fetch_assoc($result)) {
         "transmission" => $row['transmission'],
         "chassis"      => $row['chassis'],
         "performance"  => $row['performance'],
-        "image"        => "Images/" . strtolower($row['model']) . ".png"
+        // Store ID for dynamic image, and Model for fallback
+        "id"           => $row['id'],
+        "model"        => $row['model'], 
+        "image"        => "Images/" . strtolower($row['model']) . ".png" // Fallback default
     ];
 
     $options[] = $key;
@@ -45,7 +48,8 @@ $preselect = $_GET['car'] ?? "";
 <head>
 <meta charset="UTF-8">
 <title>Compare Car Models</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="toast.css">
 <style>
 /* ===== GLOBAL ===== */
 body {
@@ -120,6 +124,7 @@ h1 {
     display: flex;
     gap: 50px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .car-box {
@@ -129,13 +134,23 @@ h1 {
     width: 420px;
     text-align: center;
     box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+}
+
+.image-container {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    overflow: hidden;
 }
 
 .car-box img {
     width: 100%;
-    max-height: 220px;
+    height: 100%;
     object-fit: contain;
-    margin-bottom: 15px;
 }
 
 .label {
@@ -174,32 +189,19 @@ select {
     padding-right: 20px;
 }
 
-.btn.exit {
-    background: #c0392b;
+/* Responsive */
+@media (max-width: 900px) {
+    .compare-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
-        </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">
@@ -210,7 +212,9 @@ select {
 
     <!-- CAR 1 -->
     <div class="car-box">
-        <img id="img1" src="" alt="Car 1">
+        <div class="image-container">
+            <img id="img1" src="Images/proton.png" alt="Car 1">
+        </div>
 
         <div class="label">SELECT CAR MODEL</div>
         <select id="car1" onchange="updateCar(1)">
@@ -234,7 +238,9 @@ select {
 
     <!-- CAR 2 -->
     <div class="car-box">
-        <img id="img2" src="" alt="Car 2">
+        <div class="image-container">
+             <img id="img2" src="Images/proton.png" alt="Car 2">
+        </div>
 
         <div class="label">SELECT CAR MODEL</div>
         <select id="car2" onchange="updateCar(2)">
@@ -259,7 +265,6 @@ select {
 
 <div class="bottom-buttons">
     <a href="user_dashboard.php" class="btn">Back</a>
-    <button class="btn exit" onclick="exitApp()">Exit</button>
 </div>
 
 </div>
@@ -269,35 +274,49 @@ const carData = <?= json_encode($carDetails); ?>;
 
 function updateCar(num) {
     const select = document.getElementById("car" + num).value;
-    if (!carData[select]) return;
+    const imgEl = document.getElementById("img" + num);
+    
+    if (!carData[select]) {
+        // Reset if invalid or empty
+        imgEl.src = "Images/proton.png";
+        document.getElementById("price" + num).innerText   = "";
+        document.getElementById("engine" + num).innerText  = "";
+        document.getElementById("trans" + num).innerText   = "";
+        document.getElementById("chassis" + num).innerText = "";
+        document.getElementById("perf" + num).innerText    = "";
+        return;
+    }
 
-    document.getElementById("price" + num).innerText   = carData[select].price;
-    document.getElementById("engine" + num).innerText  = carData[select].engine;
-    document.getElementById("trans" + num).innerText   = carData[select].transmission;
-    document.getElementById("chassis" + num).innerText = carData[select].chassis;
-    document.getElementById("perf" + num).innerText    = carData[select].performance;
-    document.getElementById("img" + num).src           = carData[select].image;
+    const data = carData[select];
+
+    document.getElementById("price" + num).innerText   = data.price;
+    document.getElementById("engine" + num).innerText  = data.engine;
+    document.getElementById("trans" + num).innerText   = data.transmission;
+    document.getElementById("chassis" + num).innerText = data.chassis;
+    document.getElementById("perf" + num).innerText    = data.performance;
+    
+    // IMAGE LOGIC: Try dynamic, fail to static model image
+    imgEl.src = "display_image.php?id=" + data.id + "&t=" + new Date().getTime();
+    imgEl.onerror = function() {
+        this.src = "Images/" + data.model.toLowerCase() + ".png";
+    };
 }
 
 function testDrive(num) {
     const car = document.getElementById("car" + num).value;
     if (!car) {
-        alert("Please select a car first.");
+        showToast("Please select a car first.", "warning");
         return;
     }
     window.location.href = "test_drive.php?car=" + encodeURIComponent(car);
 }
 
-function exitApp() {
-    if (confirm("Are you sure you want to exit?")) {
-        window.location.href = "logout.php";
-    }
-}
-
+// Initial check for URL preselect
 if ("<?= $preselect ?>" !== "") {
     updateCar(1);
+    // Optionally updateCar(2) to something default? No requirement.
 }
 </script>
-
+<script src="toast.js"></script>
 </body>
 </html>

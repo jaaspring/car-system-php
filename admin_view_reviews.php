@@ -125,22 +125,7 @@ th {
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
-        </div>
-        <nav class="nav-menu">
-            <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
-            <a href="manage_cars.php" class="nav-link">Manage Cars</a>
-            <a href="manage_users.php" class="nav-link">Manage Users</a>
-            <a href="manage_appointments.php" class="nav-link">Manage Appointments</a>
-            <a href="admin_view_reviews.php" class="nav-link">Manage Reviews</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">

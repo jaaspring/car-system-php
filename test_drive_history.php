@@ -10,6 +10,20 @@ require_once __DIR__ . '/db_connection.php';
 
 $userId = $_SESSION['user_id'];
 
+// Handle Cancellation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
+    $cancelId = intval($_POST['cancel_id']);
+    
+    // Only allow cancelling if status is Pending (security check)
+    $upd = $conn->prepare("UPDATE test_drive SET status = 'Cancelled' WHERE id = ? AND user_id = ? AND status = 'Pending'");
+    $upd->bind_param("ii", $cancelId, $userId);
+    
+    if ($upd->execute()) {
+        header("Location: test_drive_history.php?toast_msg=" . urlencode("Booking cancelled successfully") . "&toast_type=success");
+        exit();
+    }
+}
+
 $stmt = $conn->prepare(
     "SELECT id, car_model_variant, location, showroom, date, time, status
      FROM test_drive
@@ -26,6 +40,7 @@ $result = $stmt->get_result();
 <meta charset="UTF-8">
 <title>My Test Drive History</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="toast.css">
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,6 +144,7 @@ body.modal-open .container {
 }
 .status.Pending { background: #f39c12; }
 .status.Completed { background: #27ae60; }
+.status.Cancelled { background: #c0392b; }
 
 .details {
     display: grid;
@@ -213,24 +229,7 @@ body.modal-open .container {
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png">
-        </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <div class="container">
 <h1 class="page-title">My Test Drive Bookings</h1>
@@ -259,14 +258,19 @@ body.modal-open .container {
            Leave Rating
         </a>
     </div>
+    <?php elseif ($row['status']==='Pending'): ?>
+    <div class="ticket-footer">
+        <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+            <input type="hidden" name="cancel_id" value="<?= $row['id'] ?>">
+            <button class="btn" style="background:#c0392b">Cancel Booking</button>
+        </form>
+    </div>
     <?php endif; ?>
 </div>
 <?php endwhile; endif; ?>
 
 <div class="bottom-bar">
     <button class="btn" onclick="openModal()">Back</button>
-    <a href="logout.php" class="btn" style="background:#c0392b"
-       onclick="return confirm('Exit?')">Exit</a>
 </div>
 </div>
 
@@ -300,6 +304,7 @@ function goTestDrive() {
     window.location.href = "test_drive.php";
 }
 </script>
+<script src="toast.js"></script>
 
 </body>
 </html>

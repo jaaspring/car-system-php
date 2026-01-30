@@ -192,24 +192,7 @@ th {
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton">
-        </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <div class="container">
 
@@ -259,8 +242,6 @@ th {
 
     <div class="bottom-bar">
         <button class="btn" onclick="openBackModal()">Back</button>
-        <a href="logout.php" class="btn exit"
-           onclick="return confirm('Are you sure you want to exit?')">Exit</a>
     </div>
 
 </div>

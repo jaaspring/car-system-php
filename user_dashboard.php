@@ -16,6 +16,7 @@ $user_name = isset($_SESSION['name']) ? $_SESSION['name'] : $_SESSION['username'
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Loan Calculator System</title>
+<link rel="stylesheet" href="toast.css">
 
 <style>
 * {
@@ -191,23 +192,7 @@ body {
 
 <body>
 
-<div class="header">
-    <div class="header-left">
-        <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
-        </div>
-        <nav class="nav-menu">
-            <a href="user_dashboard.php" class="nav-link">Home Page</a>
-            <a href="models.php" class="nav-link">Models</a>
-            <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
-            <a href="loan_history.php" class="nav-link">Loan History</a>
-            <a href="compare_models.php" class="nav-link">Compare Models</a>
-            <a href="test_drive.php" class="nav-link">Book Test Drive</a>
-            <a href="rating.php" class="nav-link">Rating</a>
-        </nav>
-    </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
-</div>
+<?php include('navigation.php'); ?>
 
 <div class="main-content">
 
@@ -223,15 +208,37 @@ body {
         <button class="slider-btn" onclick="prevSlide()">❮</button>
 
         <div class="slider">
-            <div class="slide active">
-                <h2 class="model-name">PROTON X50</h2>
-                <img src="Images/x50.png" alt="Proton X50" class="model-image">
-            </div>
-
-            <div class="slide">
-                <h2 class="model-name">PROTON X70</h2>
-                <img src="Images/x70.png" alt="Proton X70" class="model-image">
-            </div>
+            <?php
+            // Fetch 5 random cars for the slider
+            require_once __DIR__ . '/db_connection.php';
+            $slide_res = $conn->query("SELECT id, model, image FROM car_details ORDER BY RAND() LIMIT 5");
+            
+            $isActive = true;
+            if ($slide_res->num_rows > 0) {
+                while ($slide = $slide_res->fetch_assoc()) {
+                    $modelName = strtoupper($slide['model']);
+                    $imgSrc = "display_image.php?id=" . $slide['id'];
+                    $activeClass = $isActive ? 'active' : '';
+                    
+                    // Fallback to static if needed happens in display_image or via onerror, 
+                    // but here we can't easily check blob content length without fetching it.
+                    // We'll trust display_image or use JS onerror.
+                    echo "
+                    <div class='slide $activeClass'>
+                        <img src='$imgSrc' alt='Proton $modelName' class='model-image' 
+                             onerror=\"this.src='Images/" . strtolower($slide['model']) . ".png'\">
+                    </div>";
+                    
+                    $isActive = false;
+                }
+            } else {
+                // Fallback if DB empty
+                echo "
+                <div class='slide active'>
+                    <img src='Images/x50.png' class='model-image'>
+                </div>";
+            }
+            ?>
         </div>
 
         <button class="slider-btn" onclick="nextSlide()">❯</button>
@@ -263,5 +270,6 @@ function prevSlide() {
 }
 </script>
 
+<script src="toast.js"></script>
 </body>
 </html>
