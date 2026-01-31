@@ -6,6 +6,10 @@
 $user_name = isset($_SESSION['name']) ? $_SESSION['name'] : $_SESSION['username'];
 $role = $_SESSION['role'] ?? 'user';
 $active_page = $active_page ?? '';
+
+// Path Adjustment Logic
+$current_dir = basename(getcwd());
+$prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : '';
 ?>
 
 <style>
@@ -122,59 +126,59 @@ $active_page = $active_page ?? '';
 <div class="header">
     <div class="header-left">
         <div class="logo-img">
-            <img src="Images/proton.png" alt="Proton Logo">
+            <img src="<?= $prefix ?>Images/proton.png" alt="Proton Logo">
         </div>
         <nav class="nav-menu">
             <?php if ($role === 'admin'): ?>
                 <!-- Admin Navigation -->
                 <div class="nav-item">
-                    <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
+                    <a href="<?= $prefix ?>admin/admin_dashboard.php" class="nav-link">Dashboard</a>
                 </div>
                 <div class="nav-item">
-                    <a href="manage_cars.php" class="nav-link">Manage Cars</a>
+                    <a href="<?= $prefix ?>admin/manage_cars.php" class="nav-link">Manage Cars</a>
                 </div>
                 <div class="nav-item">
-                    <a href="manage_users.php" class="nav-link">Manage Users</a>
+                    <a href="<?= $prefix ?>admin/manage_users.php" class="nav-link">Manage Users</a>
                 </div>
                 <div class="nav-item">
-                    <a href="manage_appointments.php" class="nav-link">Manage Appointments</a>
+                    <a href="<?= $prefix ?>admin/manage_appointments.php" class="nav-link">Manage Appointments</a>
                 </div>
                 <div class="nav-item">
-                    <a href="admin_view_reviews.php" class="nav-link">Manage Reviews</a>
+                    <a href="<?= $prefix ?>admin/admin_view_reviews.php" class="nav-link">Manage Reviews</a>
                 </div>
             <?php else: ?>
                 <!-- User Navigation -->
                 <div class="nav-item">
-                    <a href="user_dashboard.php" class="nav-link">Home Page</a>
+                    <a href="<?= $prefix ?>customer/user_dashboard.php" class="nav-link">Home Page</a>
                 </div>
                 <div class="nav-item">
-                    <a href="models.php" class="nav-link">Models</a>
+                    <a href="<?= $prefix ?>customer/models.php" class="nav-link">Models</a>
                 </div>
                 
                 <!-- Loan Calculator Dropdown -->
                 <div class="nav-item dropdown">
-                    <a href="loan_calculator.php" class="nav-link">Loan Calculator</a>
+                    <a href="<?= $prefix ?>customer/loan_calculator.php" class="nav-link">Loan Calculator</a>
                     <div class="dropdown-content">
-                        <a href="loan_calculator.php">Loan Calculator</a>
-                        <a href="loan_history.php">Loan History</a>
+                        <a href="<?= $prefix ?>customer/loan_calculator.php">Loan Calculator</a>
+                        <a href="<?= $prefix ?>customer/loan_history.php">Loan History</a>
                     </div>
                 </div>
                 
                 <div class="nav-item">
-                    <a href="compare_models.php" class="nav-link">Compare Models</a>
+                    <a href="<?= $prefix ?>customer/compare_models.php" class="nav-link">Compare Models</a>
                 </div>
                 
                 <!-- Book Dropdown -->
                 <div class="nav-item dropdown">
-                    <a href="test_drive.php" class="nav-link">Book</a>
+                    <a href="<?= $prefix ?>customer/test_drive.php" class="nav-link">Book</a>
                     <div class="dropdown-content">
-                        <a href="test_drive.php">Book Test Drive</a>
-                        <a href="test_drive_history.php">Test Drive History</a>
-                        <a href="rating.php">Rating</a>
+                        <a href="<?= $prefix ?>customer/test_drive.php">Book Test Drive</a>
+                        <a href="<?= $prefix ?>customer/test_drive_history.php">Test Drive History</a>
+                        <a href="<?= $prefix ?>customer/rating.php">Rating</a>
                     </div>
                 </div>
             <?php endif; ?>
         </nav>
     </div>
-    <a href="logout.php" class="logout-btn">Logout</a>
+    <a href="<?= $prefix ?>logout.php" class="logout-btn">Logout</a>
 </div>

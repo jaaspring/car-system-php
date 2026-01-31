@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 // Capture filter values
 $rating_filter = $_GET['rating'] ?? '';
@@ -192,7 +192,7 @@ th {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">

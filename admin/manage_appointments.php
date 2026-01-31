@@ -3,11 +3,11 @@ session_start();
 
 // Check if user is logged in and has the correct role
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-include('db_connection.php');
+include('../db_connection.php');
 
 // Initialize filter variables
 $date_filter     = isset($_GET['date']) ? $_GET['date'] : '';
@@ -331,7 +331,7 @@ tr:hover { background: #f1f1f1; }
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- CONTENT -->
 <div class="main-content">
@@ -519,7 +519,7 @@ window.onclick = function(event) {
 }
 </script>
 
-<?php include('confirm_modal.php'); ?>
+<?php include('../confirm_modal.php'); ?>
 
 <script>
 function confirmUpdate(id) {

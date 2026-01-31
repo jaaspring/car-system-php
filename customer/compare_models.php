@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 /* =========================
    FETCH CAR DETAILS
@@ -32,7 +32,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         // Store ID for dynamic image, and Model for fallback
         "id"           => $row['id'],
         "model"        => $row['model'], 
-        "image"        => "Images/" . strtolower($row['model']) . ".png" // Fallback default
+        "image"        => "../Images/" . strtolower($row['model']) . ".png" // Fallback default
     ];
 
     $options[] = $key;
@@ -49,7 +49,7 @@ $preselect = $_GET['car'] ?? "";
 <meta charset="UTF-8">
 <title>Compare Car Models</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 <style>
 /* ===== GLOBAL ===== */
 body {
@@ -201,7 +201,7 @@ select {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">
@@ -213,7 +213,7 @@ select {
     <!-- CAR 1 -->
     <div class="car-box">
         <div class="image-container">
-            <img id="img1" src="Images/proton.png" alt="Car 1">
+            <img id="img1" src="../Images/proton.png" alt="Car 1">
         </div>
 
         <div class="label">SELECT CAR MODEL</div>
@@ -239,7 +239,7 @@ select {
     <!-- CAR 2 -->
     <div class="car-box">
         <div class="image-container">
-             <img id="img2" src="Images/proton.png" alt="Car 2">
+             <img id="img2" src="../Images/proton.png" alt="Car 2">
         </div>
 
         <div class="label">SELECT CAR MODEL</div>
@@ -296,9 +296,9 @@ function updateCar(num) {
     document.getElementById("perf" + num).innerText    = data.performance;
     
     // IMAGE LOGIC: Try dynamic, fail to static model image
-    imgEl.src = "display_image.php?id=" + data.id + "&t=" + new Date().getTime();
+    imgEl.src = "../display_image.php?id=" + data.id + "&t=" + new Date().getTime();
     imgEl.onerror = function() {
-        this.src = "Images/" + data.model.toLowerCase() + ".png";
+        this.src = "../Images/" + data.model.toLowerCase() + ".png";
     };
 }
 
@@ -317,6 +317,6 @@ if ("<?= $preselect ?>" !== "") {
     // Optionally updateCar(2) to something default? No requirement.
 }
 </script>
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 </body>
 </html>

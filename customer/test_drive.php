@@ -3,11 +3,11 @@ session_start();
 
 // Auth check
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 $user_id  = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -343,7 +343,7 @@ button:hover {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="main-content">
 
@@ -354,7 +354,7 @@ button:hover {
             <div class="preview-title" id="previewTitle">Select Your Car</div>
             
             <!-- Default placeholder image -->
-            <img src="Images/proton.png" id="previewImg" class="car-display-img" alt="Selected Car">
+            <img src="../Images/proton.png" id="previewImg" class="car-display-img" alt="Selected Car">
             
             <div class="car-price" id="previewPrice"></div>
             <div class="car-price-label" id="previewPriceLabel" style="display:none;">Starting Price</div>
@@ -485,19 +485,19 @@ function updatePreview() {
         
         // Image Logic: Try ID first, then fallback to model name logic
         // We use display_image.php for dynamic
-        imgEl.src = "display_image.php?id=" + data.id + "&t=" + new Date().getTime();
+        imgEl.src = "../display_image.php?id=" + data.id + "&t=" + new Date().getTime();
         
         // If display_image fails (no blob), we can set a fallback handling on error directly on the img tag if needed,
         // but let's try to be smart. If the ID is valid, display_image usually returns something.
         // We can add onerror to the image tag in HTML to fallback to standard folder path.
         imgEl.onerror = function() {
-            this.src = "Images/" + data.model.toLowerCase() + ".png";
+            this.src = "../Images/" + data.model.toLowerCase() + ".png";
         };
         
     } else {
         // Reset
         titleEl.innerText = "Select Your Car";
-        imgEl.src = "Images/proton.png";
+        imgEl.src = "../Images/proton.png";
         priceEl.innerText = "";
         priceLabelEl.style.display = "none";
     }
@@ -581,7 +581,7 @@ function confirmBooking() {
 }
 </script>
 
-<?php include('confirm_modal.php'); ?>
+<?php include('../confirm_modal.php'); ?>
 
 </body>
 </html>

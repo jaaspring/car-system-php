@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'], $_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 /* =========================
    DELETE USER
@@ -113,7 +113,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Users</title>
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 
 <!-- Keeping existing CSS -->
 <style>
@@ -301,7 +301,7 @@ th {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">
@@ -428,9 +428,9 @@ if (isset($_GET['add']) || $editUser) {
 
 </div>
 
-<?php include('confirm_modal.php'); ?>
+<?php include('../confirm_modal.php'); ?>
 
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 <script>
 function confirmEdit(userId) {
     showConfirm('Are you sure to edit?', function() {

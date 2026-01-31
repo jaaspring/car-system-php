@@ -5,11 +5,11 @@ session_start();
    AUTH CHECK
    ========================= */
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -239,7 +239,7 @@ textarea { resize: none; height: 100px; }
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="main-content">
 <div class="card">

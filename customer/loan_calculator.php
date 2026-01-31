@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 /* =========================
    SAVE LOAN HISTORY
@@ -67,7 +67,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 <head>
 <meta charset="UTF-8">
 <title>Loan Calculator</title>
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -261,7 +261,7 @@ select, input {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- CONTENT -->
 <div class="main-content">
@@ -271,7 +271,7 @@ select, input {
         <div class="car-preview">
             <div class="preview-title" id="previewTitle">Select Vehicle</div>
             
-            <img src="Images/proton.png" id="previewImg" class="car-display-img" alt="Selected Car">
+            <img src="../Images/proton.png" id="previewImg" class="car-display-img" alt="Selected Car">
             
             <div class="car-price" id="previewPrice"></div>
         </div>
@@ -398,15 +398,15 @@ function updatePreview() {
     previewPrice.innerText = data.priceFormatted;
 
     // Update Image (using backend ID for dynamic blob, or fallback)
-    previewImg.src = "display_image.php?id=" + data.id + "&t=" + new Date().getTime();
+    previewImg.src = "../display_image.php?id=" + data.id + "&t=" + new Date().getTime();
     previewImg.onerror = function() {
-        this.src = "Images/" + vehicleSel.value.toLowerCase() + ".png";
+        this.src = "../Images/" + vehicleSel.value.toLowerCase() + ".png";
     };
 }
 
 function resetPreview() {
     previewTitle.innerText = "Select Vehicle";
-    previewImg.src = "Images/proton.png";
+    previewImg.src = "../Images/proton.png";
     previewPrice.innerText = "";
 }
 
@@ -467,6 +467,6 @@ function saveLoan() {
 // Initial state
 resetPreview();
 </script>
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 </body>
 </html>

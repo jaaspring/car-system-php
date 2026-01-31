@@ -3,7 +3,7 @@ session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -16,7 +16,7 @@ $user_name = isset($_SESSION['name']) ? $_SESSION['name'] : $_SESSION['username'
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Loan Calculator System</title>
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 
 <style>
 * {
@@ -192,7 +192,7 @@ body {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="main-content">
 
@@ -210,14 +210,14 @@ body {
         <div class="slider">
             <?php
             // Fetch 5 random cars for the slider
-            require_once __DIR__ . '/db_connection.php';
+            require_once '../db_connection.php';
             $slide_res = $conn->query("SELECT id, model, image FROM car_details ORDER BY RAND() LIMIT 5");
             
             $isActive = true;
             if ($slide_res->num_rows > 0) {
                 while ($slide = $slide_res->fetch_assoc()) {
                     $modelName = strtoupper($slide['model']);
-                    $imgSrc = "display_image.php?id=" . $slide['id'];
+                    $imgSrc = "../display_image.php?id=" . $slide['id'];
                     $activeClass = $isActive ? 'active' : '';
                     
                     // Fallback to static if needed happens in display_image or via onerror, 
@@ -226,7 +226,7 @@ body {
                     echo "
                     <div class='slide $activeClass'>
                         <img src='$imgSrc' alt='Proton $modelName' class='model-image' 
-                             onerror=\"this.src='Images/" . strtolower($slide['model']) . ".png'\">
+                             onerror=\"this.src='../Images/" . strtolower($slide['model']) . ".png'\">
                     </div>";
                     
                     $isActive = false;
@@ -235,7 +235,7 @@ body {
                 // Fallback if DB empty
                 echo "
                 <div class='slide active'>
-                    <img src='Images/x50.png' class='model-image'>
+                    <img src='../Images/x50.png' class='model-image'>
                 </div>";
             }
             ?>
@@ -270,6 +270,6 @@ function prevSlide() {
 }
 </script>
 
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 </body>
 </html>

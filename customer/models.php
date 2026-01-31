@@ -2,13 +2,13 @@
 session_start();
 
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
 $user_name = isset($_SESSION['name']) ? $_SESSION['name'] : $_SESSION['username'];
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 /* Get unique car models */
 $sql = "SELECT DISTINCT model FROM car_details ORDER BY model ASC";
@@ -20,12 +20,12 @@ if (!$result) {
 
 /* Model → Image mapping (same idea as Java Swing) */
 $modelImages = [
-    "S70" => "Images/s70.png",
-    "X50" => "Images/x50.png",
-    "X70" => "Images/x70.png",
-    "Persona" => "Images/persona.png",
-    "Iriz" => "Images/iriz.png",
-    "Saga" => "Images/saga.png"
+    "S70" => "../Images/s70.png",
+    "X50" => "../Images/x50.png",
+    "X70" => "../Images/x70.png",
+    "Persona" => "../Images/persona.png",
+    "Iriz" => "../Images/iriz.png",
+    "Saga" => "../Images/saga.png"
 ];
 ?>
 <!DOCTYPE html>
@@ -34,7 +34,7 @@ $modelImages = [
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Models - Loan Calculator System</title>
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 
 <style>
 * {
@@ -218,7 +218,7 @@ body {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
@@ -230,7 +230,7 @@ body {
     <div class="models-grid">
         <?php while ($row = mysqli_fetch_assoc($result)):
             $model = $row['model'];
-            $image = $modelImages[$model] ?? 'Images/default.png';
+            $image = $modelImages[$model] ?? '../Images/default.png';
         ?>
             <div class="model-card">
                 <a href="car_details.php?model=<?php echo urlencode($model); ?>">
@@ -252,6 +252,6 @@ body {
 // No exit function needed
 </script>
 
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 </body>
 </html>

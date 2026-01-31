@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 $userId = $_SESSION['user_id'];
 
@@ -42,7 +42,7 @@ $result = $stmt->get_result();
 <meta charset="UTF-8">
 <title>My Test Drive History</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -231,7 +231,7 @@ body.modal-open .container {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="container">
 <h1 class="page-title">My Test Drive Bookings</h1>
@@ -350,6 +350,6 @@ function confirmCancel() {
     </div>
 </div>
 
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 </body>
 </html>

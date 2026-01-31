@@ -3,11 +3,11 @@ session_start();
 
 // Check if user is logged in and has the correct role
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 // Fetch Counts
 $car_count = $conn->query("SELECT COUNT(*) FROM car_details")->fetch_row()[0];
@@ -175,7 +175,7 @@ body {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- MAIN -->
 <div class="main-content">
@@ -189,7 +189,7 @@ body {
         <!-- MANAGE CARS -->
         <a href="manage_cars.php" class="card">
             <div class="card-img">
-                <img src="Images/admin_manage_cars.png" alt="Manage Cars">
+                <img src="../Images/admin_manage_cars.png" alt="Manage Cars">
             </div>
             <div class="card-title">
                 MANAGE CARS <br>
@@ -200,7 +200,7 @@ body {
         <!-- MANAGE USERS -->
         <a href="manage_users.php" class="card">
             <div class="card-img">
-                <img src="Images/admin_manage_users.png" alt="Manage Users">
+                <img src="../Images/admin_manage_users.png" alt="Manage Users">
             </div>
             <div class="card-title">
                 MANAGE USERS <br>
@@ -211,7 +211,7 @@ body {
         <!-- MANAGE APPOINTMENTS -->
         <a href="manage_appointments.php" class="card">
             <div class="card-img">
-                <img src="Images/admin_manage_appointments.png" alt="Manage Appointments">
+                <img src="../Images/admin_manage_appointments.png" alt="Manage Appointments">
             </div>
             <div class="card-title">
                 MANAGE APPOINTMENTS <br>

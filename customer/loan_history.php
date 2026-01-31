@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 $userId = $_SESSION['user_id'];
 
@@ -203,7 +203,7 @@ th {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="container">
 
@@ -303,7 +303,7 @@ function confirmDelete(recordId) {
 }
 </script>
 
-<?php include('confirm_modal.php'); ?>
+<?php include('../confirm_modal.php'); ?>
 
 </body>
 </html>

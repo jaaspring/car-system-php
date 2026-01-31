@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 $error = '';
 $success = '';
@@ -153,7 +153,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Cars</title>
-<link rel="stylesheet" href="toast.css">
+<link rel="stylesheet" href="../toast.css">
 
 <style>
 * {
@@ -327,7 +327,7 @@ input {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <!-- ===== MAIN CONTENT ===== -->
 <div class="main-content">
@@ -383,7 +383,7 @@ if (isset($_GET['add']) || $editCar) {
         <td><?= $row['id'] ?></td>
         <td>
             <?php if (!empty($row['image'])): ?>
-                <img src="display_image.php?id=<?= $row['id'] ?>" style="width:100px; height:60px; object-fit:cover;">
+                <img src="../display_image.php?id=<?= $row['id'] ?>" style="width:100px; height:60px; object-fit:cover;">
             <?php else: ?>
                 <span style="color:#888;">No Image</span>
             <?php endif; ?>
@@ -455,7 +455,7 @@ if (isset($_GET['add']) || $editCar) {
         <label>Car Image</label>
         <?php if ($editCar && !empty($editCar['image'])): ?>
             <div style="margin-bottom: 10px;">
-                <img src="display_image.php?id=<?= $editCar['id'] ?>" 
+                <img src="../display_image.php?id=<?= $editCar['id'] ?>" 
                      style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 1px solid #ccc;">
             </div>
             <p style="font-size:12px; margin-bottom:5px;">Change Image:</p>
@@ -480,9 +480,9 @@ if (isset($_GET['add']) || $editCar) {
 </div>
 </div>
 
-<?php include('confirm_modal.php'); ?>
+<?php include('../confirm_modal.php'); ?>
 
-<script src="toast.js"></script>
+<script src="../toast.js"></script>
 <script>
 function confirmEdit(carId) {
     showConfirm('Are you sure to edit?', function() {

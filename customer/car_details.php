@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
-require_once __DIR__ . '/db_connection.php';
+require_once '../db_connection.php';
 
 /* =========================
    GET SELECTED MODEL
@@ -308,7 +308,7 @@ select {
 
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('../navigation.php'); ?>
 
 <div class="main-content">
     <div class="details-container">
@@ -344,8 +344,8 @@ select {
             <!-- Right Image Panel -->
             <div class="image-box">
                 <img id="carImage" 
-                     src="display_image.php?id=<?php echo $defaultId; ?>"
-                     onerror="this.src='Images/<?php echo strtolower($selectedModel); ?>.png'" 
+                     src="../display_image.php?id=<?php echo $defaultId; ?>"
+                     onerror="this.src='../Images/<?php echo strtolower($selectedModel); ?>.png'" 
                      alt="<?php echo htmlspecialchars($selectedModel); ?>">
 
                 <div class="image-buttons">
@@ -374,7 +374,7 @@ function updateDetails() {
     // Update Image
     const imgId = variantImages[variant];
     const carImg = document.getElementById("carImage");
-    carImg.src = "display_image.php?id=" + imgId + "&t=" + new Date().getTime();
+    carImg.src = "../display_image.php?id=" + imgId + "&t=" + new Date().getTime();
 
     // Update Paint Options
     const paintSelect = document.getElementById("paintType");
