@@ -14,6 +14,7 @@ $date_filter     = isset($_GET['date']) ? $_GET['date'] : '';
 $time_filter     = isset($_GET['time']) ? $_GET['time'] : '';
 $location_filter = isset($_GET['location']) ? $_GET['location'] : '';
 $showroom_filter = isset($_GET['showroom']) ? $_GET['showroom'] : '';
+$status_filter   = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
 
 /* ===== DELETE APPOINTMENT ===== */
 if (isset($_GET['delete'])) {
@@ -64,13 +65,16 @@ if ($date_filter) {
     $sql .= " AND td.date = '$date_filter'";
 }
 if ($time_filter) {
-    $sql .= " AND td.time = '$time_filter'";
+    $sql .= " AND td.time LIKE '$time_filter%'";
 }
 if ($location_filter) {
     $sql .= " AND td.location = '$location_filter'";
 }
 if ($showroom_filter) {
     $sql .= " AND td.showroom = '$showroom_filter'";
+}
+if ($status_filter) {
+    $sql .= " AND td.status = '$status_filter'";
 }
 
 $result = $conn->query($sql);
@@ -202,6 +206,21 @@ h1 {
 .table-btn.black { background: #000; }
 .table-btn.green { background: #2ecc71; } /* Matching the 'green' buttons elsewhere */
 
+/* CLEAR BTN */
+.clear-btn {
+    background: #6c757d;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.3s;
+}
+.clear-btn:hover { opacity: 0.8; }
+
 /* ===== TABLE ===== */
 table {
     width: 100%;
@@ -328,7 +347,18 @@ tr:hover { background: #f1f1f1; }
 
 <form class="filter-form" method="GET">
     <input type="date" name="date" value="<?= htmlspecialchars($date_filter) ?>">
-    <input type="time" name="time" value="<?= htmlspecialchars($time_filter) ?>">
+    
+    <select name="time">
+        <option value="">All Times</option>
+        <?php 
+        $slots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00'];
+        foreach ($slots as $slot): 
+        ?>
+            <option value="<?= $slot ?>" <?= $time_filter === $slot ? 'selected' : '' ?>>
+                <?= $slot ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 
     <!-- LOCATION DROPDOWN -->
     <select name="location">
@@ -352,7 +382,18 @@ tr:hover { background: #f1f1f1; }
         <?php endforeach; ?>
     </select>
 
+    <!-- STATUS DROPDOWN -->
+    <select name="status_filter">
+        <option value="">All Status</option>
+        <option value="Pending" <?= $status_filter === 'Pending' ? 'selected' : '' ?>>Pending</option>
+        <option value="Completed" <?= $status_filter === 'Completed' ? 'selected' : '' ?>>Completed</option>
+        <option value="Cancelled" <?= $status_filter === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+    </select>
+
     <button type="submit">Filter</button>
+    <?php if ($date_filter || $time_filter || $location_filter || $showroom_filter || $status_filter): ?>
+        <a href="manage_appointments.php" class="clear-btn">Clear</a>
+    <?php endif; ?>
 </form>
 
 <table>

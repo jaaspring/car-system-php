@@ -25,10 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
 }
 
 $stmt = $conn->prepare(
-    "SELECT id, car_model_variant, location, showroom, date, time, status
-     FROM test_drive
-     WHERE user_id = ?
-     ORDER BY date DESC, time DESC"
+    "SELECT td.id, td.car_model_variant, td.location, td.showroom, td.date, td.time, td.status,
+            tr.id AS review_id, tr.rating AS user_rating
+     FROM test_drive td
+     LEFT JOIN test_drive_reviews tr ON td.id = tr.test_drive_id
+     WHERE td.user_id = ?
+     ORDER BY td.date DESC, td.time DESC"
 );
 $stmt->bind_param("i", $userId);
 $stmt->execute();
@@ -253,10 +255,16 @@ body.modal-open .container {
 
     <?php if ($row['status']==='Completed'): ?>
     <div class="ticket-footer">
-        <a class="btn"
-           href="rating.php?test_drive_id=<?= $row['id'] ?>&car=<?= urlencode($row['car_model_variant']) ?>">
-           Leave Rating
-        </a>
+        <?php if ($row['review_id']): ?>
+            <span class="status" style="background: #f1c40f; color: #000; font-weight: bold; border: 1px solid #000;">
+                Rated: <?= str_repeat('★', $row['user_rating']) . str_repeat('☆', 5 - $row['user_rating']) ?>
+            </span>
+        <?php else: ?>
+            <a class="btn"
+               href="rating.php?test_drive_id=<?= $row['id'] ?>&car=<?= urlencode($row['car_model_variant']) ?>">
+               Leave Rating
+            </a>
+        <?php endif; ?>
     </div>
     <?php elseif ($row['status']==='Pending'): ?>
     <div class="ticket-footer">
@@ -342,8 +350,6 @@ function confirmCancel() {
     </div>
 </div>
 
-<script>
 <script src="toast.js"></script>
-
 </body>
 </html>

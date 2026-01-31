@@ -82,9 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* CHECK TIME AVAILABILITY */
         $check_stmt = $conn->prepare(
             "SELECT id FROM test_drive
-             WHERE date = ? AND time = ? AND showroom = ?"
+             WHERE date = ? AND time = ? AND location = ? AND showroom = ? AND status != 'Cancelled'"
         );
-        $check_stmt->bind_param("sss", $date, $time, $showroom);
+        $check_stmt->bind_param("ssss", $date, $time, $location, $showroom);
         $check_stmt->execute();
         $check_result = $check_stmt->get_result();
 
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($insert_stmt->execute()) {
                 $success_message =
-                    "Your test drive has been booked successfully!";
+                    "Successfully Booked";
             } else {
                 $error_message = "Booking failed. Please try again.";
             }
@@ -288,6 +288,13 @@ input, select {
     font-family: inherit;
 }
 
+input:disabled, select:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border: 1px solid #ced4da;
+}
+
 button {
     margin-top: 25px;
     width: 100%;
@@ -403,7 +410,7 @@ button:hover {
                 <div style="display: flex; gap: 15px;">
                     <div style="flex:1;">
                         <label>Location</label>
-                        <select name="location" required>
+                        <select name="location" id="locationSelect" required onchange="updateAvailability()">
                             <option value="">Select</option>
                             <option>Kuala Lumpur</option>
                             <option>Penang</option>
@@ -412,7 +419,7 @@ button:hover {
                     </div>
                     <div style="flex:1;">
                         <label>Showroom</label>
-                        <select name="showroom" required>
+                        <select name="showroom" id="showroomSelect" required onchange="updateAvailability()">
                             <option value="">Select</option>
                             <option>Showroom 1</option>
                             <option>Showroom 2</option>
@@ -423,11 +430,11 @@ button:hover {
                 <div style="display: flex; gap: 15px;">
                     <div style="flex:1;">
                         <label>Date</label>
-                        <input type="date" name="date" required>
+                        <input type="date" name="date" id="dateInput" required onchange="updateAvailability()" min="<?= date('Y-m-d') ?>">
                     </div>
                     <div style="flex:1;">
                         <label>Time</label>
-                        <select name="time" required>
+                        <select name="time" id="timeSelect" required>
                             <option value="">Select</option>
                             <option>09:00</option>
                             <option>10:00</option>
@@ -440,7 +447,8 @@ button:hover {
                     </div>
                 </div>
 
-                <button type="submit">BOOK TEST DRIVE</button>
+                <button type="button" onclick="confirmBooking()">BOOK TEST DRIVE</button>
+                <input type="hidden" id="submitBooking" name="submit_booking" value="1">
 
                 <a href="test_drive_history.php" style="text-decoration:none;">
                     <button type="button" class="secondary-btn">
@@ -496,8 +504,84 @@ function updatePreview() {
 }
 
 // Initialize on load (in case of sticky form or GET param)
-window.onload = updatePreview;
+window.onload = function() {
+    updatePreview();
+    updateAvailability();
+};
+
+async function updateAvailability() {
+    const dateInput = document.getElementById("dateInput");
+    const locationSelect = document.getElementById("locationSelect");
+    const showroomSelect = document.getElementById("showroomSelect");
+    const timeSelect = document.getElementById("timeSelect");
+    
+    const date = dateInput.value;
+    const location = locationSelect.value;
+    const showroom = showroomSelect.value;
+    
+    if (!date || !location || !showroom) {
+        // Reset all options to enabled if date, location or showroom not selected
+        Array.from(timeSelect.options).forEach(opt => {
+            if (opt.value === "") return;
+            const baseText = opt.textContent.replace(" (Already Booked)", "");
+            opt.disabled = false;
+            opt.style.color = "";
+            opt.style.backgroundColor = "";
+            opt.textContent = baseText;
+        });
+        return;
+    }
+    
+    try {
+        const response = await fetch(`check_availability.php?date=${date}&location=${encodeURIComponent(location)}&showroom=${encodeURIComponent(showroom)}`);
+        const bookedTimes = await response.json();
+        
+        Array.from(timeSelect.options).forEach(opt => {
+            if (opt.value === "") return;
+            
+            // Remove any previous "(Already Booked)" from the text
+            const baseText = opt.textContent.replace(" (Already Booked)", "");
+            
+            if (bookedTimes.includes(opt.value)) {
+                opt.disabled = true;
+                opt.style.color = "#ccc";
+                opt.style.backgroundColor = "#f8f9fa";
+                opt.textContent = baseText + " (Already Booked)";
+                if (timeSelect.value === opt.value) {
+                    timeSelect.value = ""; // Reset if currently selected
+                }
+            } else {
+                opt.disabled = false;
+                opt.style.color = "";
+                opt.style.backgroundColor = "";
+                opt.textContent = baseText;
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching availability:", error);
+    }
+}
+
+function confirmBooking() {
+    const form = document.querySelector('form');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    showConfirm('Are you sure to book this test drive?', function() {
+        // Add a hidden input to signify submission if needed, but here we just submit the form
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'confirm_booking';
+        hiddenInput.value = '1';
+        form.appendChild(hiddenInput);
+        form.submit();
+    });
+}
 </script>
+
+<?php include('confirm_modal.php'); ?>
 
 </body>
 </html>

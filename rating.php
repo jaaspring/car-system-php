@@ -27,7 +27,7 @@ $stmt = $conn->prepare(
     "SELECT id, car_model_variant, date
      FROM test_drive
      WHERE user_id = ?
-       AND status = 'completed'
+       AND status = 'Completed'
        AND id NOT IN (
             SELECT test_drive_id FROM test_drive_reviews
        )
@@ -66,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("iiis", $test_drive_id, $user_id, $rating, $comment);
 
         if ($stmt->execute()) {
-            $success_message = "Thank you! Your feedback has been submitted.";
+            header("Location: test_drive_history.php?toast_msg=" . urlencode("Feedback submitted! Thank you.") . "&toast_type=success");
+            exit();
         } else {
             $error_message = "Submission failed. Please try again.";
         }
@@ -286,7 +287,13 @@ textarea { resize: none; height: 100px; }
 <textarea name="comment" required></textarea>
 </div>
 
-<button class="submit-btn">Submit Feedback</button>
+<button class="submit-btn" style="margin-bottom: 20px;">Submit Feedback</button>
+
+<div style="text-align: center;">
+    <a href="test_drive_history.php" style="color: #666; font-size: 14px; text-decoration: none; font-weight: bold;">
+        &larr; Back to Booking History
+    </a>
+</div>
 
 </form>
 <?php endif; ?>
