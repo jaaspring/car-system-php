@@ -59,6 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Please write a comment.";
     } else {
 
+        // Check if connection is still alive, reconnect if needed
+        if (!$conn->ping()) {
+            $conn->close();
+            require_once '../db_connection.php';
+        }
+
         $stmt = $conn->prepare(
             "INSERT INTO test_drive_reviews (test_drive_id, user_id, rating, comment)
              VALUES (?, ?, ?, ?)"

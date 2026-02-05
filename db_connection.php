@@ -13,3 +13,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Set charset to UTF-8
+$conn->set_charset("utf8mb4");
+
+// Increase wait timeout to prevent "MySQL server has gone away" errors
+$conn->query("SET SESSION wait_timeout = 600");
+
