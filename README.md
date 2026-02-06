@@ -1,45 +1,47 @@
-# Car System PHP
+# Car Loan Calculation System (Integration Part 2)
 
-A comprehensive PHP-based car management and analytics system, serving as **Part 2 - Integration Car System**. This project integrates enhancement features derived from the original Java command-line interface application, adapted and expanded for a web-based modular environment.
-
-## Overview
-
-This system allows users to browse cars, book test drives, compare models, and calculate loans, while administrators can manage the entire fleet, user base, and appointments. It has been recently restructured into a modular directory format for improved security and scalability.
+A comprehensive PHP-based car management and analytics system, serving as **Part 2 - Integration Car System**. This project is the web-based evolution of the original [Car Loan Calculation System (Java)](https://github.com/jaaspring/car-loan-calculation-system-java), adapted and expanded for a modular web environment.
 
 ## Features
 
-### Core Features
-- **User & Admin Dashboards**: Distinct interfaces for different user roles.
-- **Car Management**: Admin can add, edit, and delete vehicles.
-- **Test Drive Booking**: Users can schedule test drives; Admins can manage them.
-- **Secure Authentication**: Prepared statements and role-based access control.
+### Core Functionality
+- **Car Management**: Admin can add, update, and manage car details including images, pricing, and specifications.
+- **Car Comparison**: Compare different car models side-by-side to see differences in performance and features.
+- **Loan Calculator**: Calculate monthly installments based on car price, interest rates, and down payments, with history tracking.
+- **User Dashboard**: Role-based access for Admins and Customer Users.
+- **Test Drive Scheduling**: System for users to book test drives for their preferred models; Admins can manage these appointments.
+- **User Authentication**: Secure login and registration system with **Bcrypt** password hashing.
 
-### Enhancement Features (Integration Part 2)
-- **Loan Calculator**: Estimate monthly payments with history tracking.
-- **Compare Models**: Side-by-side technical comparison of different Proton models.
+### Recent Enhancements (Web Exclusive)
+- **Account Management**:
+    - **Profile Customization**: Users can upload and manage profile pictures.
+    - **Settings**: Dedicated pages for updating contact info and changing passwords.
+- **Security & UX**:
+    - **Forgot Password**: integrated **PHPMailer** for secure email-based password resets.
+    - **Password Visibility**: Interactive "Show/Hide" toggle for credential fields.
 - **Advanced Admin Analytics**:
-    - **Status Filtering**: Manage appointments by Pending, Completed, or Cancelled status.
-    - **Branch Analysis**: Filter customer reviews by **Location** and **Showroom**.
-- **User Reviews & Ratings**: 
-    - Integrated star system (★) in history view.
-    - High-visibility status badges (Yellow for "Rated").
-- **Dynamic UX**: AJAX-based availability checks and real-time Toast notifications.
+    - Filter appointments by status (Pending, Completed, Cancelled).
+    - Analyze customer reviews by Branch and Location.
+- **User Reviews & Ratings**: Integrated star rating system with visual status badges.
 
 ## Project Structure
 
 ```text
 ├── admin/               # Administrative tools (Dashboard, Users, Cars, Reviews)
-├── customer/            # Customer tools (Dashboard, Models, Booking, Loans)
+├── customer/            # Customer tools (Dashboard, Models, Booking, Loans, Settings)
 ├── Images/              # Shared vehicle visuals
+├── vendor/              # Composer dependencies (PHPMailer)
 ├── db_connection.php    # Centralized database logic
 ├── navigation.php       # Dynamic path-aware navigation
-├── toast.js/.css        # Global notification system
-└── login.php            # Role-based secure portal
+├── forgot_password.php  # Password recovery system
+└── login.php            # Secure entry portal
 ```
 
+## System Requirements
+- **Server**: Apache (via XAMPP/WAMP) or compatible web server.
+- **Database**: MySQL.
+- **PHP**: 7.4+ (8.x recommended).
+- **Composer**: For managing dependencies (PHPMailer).
+
 ## Integration Notes
-
-This project corresponds to the integration phase, bringing features from the standalone logic into a web-based structure. It builds upon the concepts found in the [Car Loan Calculation System (Java)](https://github.com/jaaspring/car-loan-calculation-system-java).
-
----
-**Status**: Modular Restructuring Complete | Analytical Filters Deployed.
+This project corresponds to the integration phase, bringing features from the standalone logic into a web-based structure. It builds upon the concepts found in the original Java command-line interface application.
