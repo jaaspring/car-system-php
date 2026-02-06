@@ -1,322 +1,238 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['username'], $_SESSION['user_id'])) {
+if (!isset($_SESSION['username'])) {
     header("Location: ../login.php");
     exit();
 }
-
 require_once '../db_connection.php';
 
-/* =========================
-   FETCH CAR DETAILS
-   ========================= */
-$sql = "SELECT id, model, variant, price, engine, transmission, chassis, performance
-        FROM car_details
-        ORDER BY id ASC";
-
-$result = mysqli_query($conn, $sql);
-
-$carDetails = [];
-$options = [];
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $key = $row['model'] . " - " . $row['variant'];
-
-    $carDetails[$key] = [
-        "price"        => $row['price'],
-        "engine"       => $row['engine'],
-        "transmission" => $row['transmission'],
-        "chassis"      => $row['chassis'],
-        "performance"  => $row['performance'],
-        // Store ID for dynamic image, and Model for fallback
-        "id"           => $row['id'],
-        "model"        => $row['model'], 
-        "image"        => "../Images/" . strtolower($row['model']) . ".png" // Fallback default
-    ];
-
-    $options[] = $key;
+// Fetch all models for dropdowns
+$cars = [];
+$res = $conn->query("SELECT * FROM car_details ORDER BY model ASC, variant ASC");
+while($row = $res->fetch_assoc()) {
+    $cars[] = $row;
 }
 
-/* =========================
-   PRESELECT FROM URL
-   ========================= */
-$preselect = $_GET['car'] ?? "";
+// Handle Selection
+$car1 = null;
+$car2 = null;
+
+if (isset($_GET['car1']) && !empty($_GET['car1'])) {
+    $id1 = intval($_GET['car1']);
+    foreach($cars as $c) { if ($c['id'] == $id1) { $car1 = $c; break; } }
+}
+
+if (isset($_GET['car2']) && !empty($_GET['car2'])) {
+    $id2 = intval($_GET['car2']);
+    foreach($cars as $c) { if ($c['id'] == $id2) { $car2 = $c; break; } }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compare Car Models</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../toast.css">
+<title>Compare Models</title>
+<link rel="stylesheet" href="../assets/css/toast.css">
 <style>
-/* ===== GLOBAL ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: 'Century Gothic', sans-serif;
-    background: radial-gradient(
-        ellipse at center,
-        #f4d77e 0%,
-        #e6c770 25%,
-        #d4a747 50%,
-        #c89a3d 75%,
-        #9d7730 100%
-    );
-    margin: 0;
-}
-
-/* ===== HEADER (DASHBOARD STYLE) ===== */
-.header {
-    background: #000;
-    padding: 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-left {
-    display: flex;
-    gap: 40px;
-    align-items: center;
-}
-
-.logo-img img {
-    height: 45px;
-}
-
-.nav-menu {
-    display: flex;
-    gap: 30px;
-}
-
-.nav-link {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.nav-link:hover {
-    opacity: 0.7;
-}
-
-.logout-btn {
-    background: #ff4500;
-    color: #fff;
-    padding: 10px 25px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* ===== CONTENT ===== */
-.container {
-    max-width: 1400px;
-    margin: auto;
-    padding: 50px;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.compare-wrapper {
-    display: flex;
-    gap: 50px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.car-box {
-    background: #fff;
-    border-radius: 20px;
-    padding: 25px;
-    width: 420px;
-    text-align: center;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    background: radial-gradient(circle, #f4d77e, #c89a3d);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
+.header { background: #000; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+.header-left { display: flex; align-items: center; gap: 40px; }
+.logo-img img { height: 45px; }
+.nav-menu { display: flex; gap: 30px; }
+.nav-link { color: #fff; text-decoration: none; font-weight: 600; }
+.nav-link:hover { opacity: .7; }
+.logout-btn { background: #ff4500; color: #fff; padding: 10px 25px; border-radius: 20px; text-decoration: none; font-weight: bold; }
 
-.image-container {
-    height: 220px;
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    width: 90%;
+}
+
+h1 { text-align: center; margin-bottom: 30px; }
+
+.selectors {
     display: flex;
-    align-items: center;
+    gap: 20px;
     justify-content: center;
-    margin-bottom: 15px;
-    overflow: hidden;
-}
-
-.car-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.label {
-    font-size: 13px;
-    margin-top: 12px;
-}
-
-.value {
-    font-size: 14px;
-    font-weight: bold;
+    margin-bottom: 40px;
 }
 
 select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 300px;
+    font-size: 16px;
 }
 
-.btn {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: none;
+.compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.car-col {
+    text-align: center;
+}
+
+.car-img-box {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.car-img-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.spec-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+.spec-label {
+    font-weight: bold;
+    color: #555;
+    width: 40%;
+    text-align: right;
+    padding-right: 15px;
+}
+.spec-val {
+    font-weight: bold;
+    text-align: left;
+    padding-left: 15px;
+}
+
+.vs-badge {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     background: #000;
     color: #fff;
+    padding: 10px 15px;
+    border-radius: 50%;
     font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
+    font-style: italic;
+    top: 260px; /* Adjust based on layout */
 }
 
-.bottom-buttons {
-    margin-top: 40px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    padding-right: 20px;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .compare-wrapper {
-        flex-direction: column;
-        align-items: center;
-    }
+@media(max-width: 800px) {
+    .compare-grid { grid-template-columns: 1fr; }
+    .vs-badge { display: none; }
 }
 </style>
 </head>
-
 <body>
 
 <?php include('../navigation.php'); ?>
 
-<!-- ===== CONTENT ===== -->
-<div class="container">
+<div class="container" style="position:relative;">
+    <h1>Compare Models</h1>
 
-<h1>COMPARE CAR MODELS</h1>
-
-<div class="compare-wrapper">
-
-    <!-- CAR 1 -->
-    <div class="car-box">
-        <div class="image-container">
-            <img id="img1" src="../Images/proton.png" alt="Car 1">
-        </div>
-
-        <div class="label">SELECT CAR MODEL</div>
-        <select id="car1" onchange="updateCar(1)">
-            <option value="">-- Select --</option>
-            <?php foreach ($options as $opt): ?>
-                <option value="<?= htmlspecialchars($opt) ?>"
-                    <?= $opt === $preselect ? "selected" : "" ?>>
-                    <?= htmlspecialchars($opt) ?>
+    <div class="selectors">
+        <select id="select1" onchange="updateCompare()">
+            <option value="">-- Select Car 1 --</option>
+            <?php foreach($cars as $c): ?>
+                <option value="<?= $c['id'] ?>" <?= ($car1 && $car1['id'] == $c['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['model'] . ' ' . $c['variant']) ?>
                 </option>
             <?php endforeach; ?>
         </select>
 
-        <div class="label">PRICE</div><div class="value" id="price1"></div>
-        <div class="label">ENGINE</div><div class="value" id="engine1"></div>
-        <div class="label">TRANSMISSION</div><div class="value" id="trans1"></div>
-        <div class="label">CHASSIS</div><div class="value" id="chassis1"></div>
-        <div class="label">PERFORMANCE</div><div class="value" id="perf1"></div>
-
-        <button class="btn" onclick="testDrive(1)">Test Drive</button>
-    </div>
-
-    <!-- CAR 2 -->
-    <div class="car-box">
-        <div class="image-container">
-             <img id="img2" src="../Images/proton.png" alt="Car 2">
-        </div>
-
-        <div class="label">SELECT CAR MODEL</div>
-        <select id="car2" onchange="updateCar(2)">
-            <option value="">-- Select --</option>
-            <?php foreach ($options as $opt): ?>
-                <option value="<?= htmlspecialchars($opt) ?>">
-                    <?= htmlspecialchars($opt) ?>
+        <select id="select2" onchange="updateCompare()">
+            <option value="">-- Select Car 2 --</option>
+            <?php foreach($cars as $c): ?>
+                <option value="<?= $c['id'] ?>" <?= ($car2 && $car2['id'] == $c['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['model'] . ' ' . $c['variant']) ?>
                 </option>
             <?php endforeach; ?>
         </select>
-
-        <div class="label">PRICE</div><div class="value" id="price2"></div>
-        <div class="label">ENGINE</div><div class="value" id="engine2"></div>
-        <div class="label">TRANSMISSION</div><div class="value" id="trans2"></div>
-        <div class="label">CHASSIS</div><div class="value" id="chassis2"></div>
-        <div class="label">PERFORMANCE</div><div class="value" id="perf2"></div>
-
-        <button class="btn" onclick="testDrive(2)">Test Drive</button>
     </div>
 
-</div>
+    <!-- VS BADGE -->
+    <div class="vs-badge">VS</div>
 
-<div class="bottom-buttons">
-    <a href="user_dashboard.php" class="btn">Back</a>
-</div>
+    <div class="compare-grid">
+        <!-- CAR 1 -->
+        <div class="car-col">
+            <?php if ($car1): ?>
+                <div class="car-img-box">
+                    <img src="../display_image.php?id=<?= $car1['id'] ?>" onerror="this.src='../Images/proton.png'">
+                </div>
+                <h2><?= htmlspecialchars($car1['model']) ?></h2>
+                <h4 style="color:#777;"><?= htmlspecialchars($car1['variant']) ?></h4>
+                <div style="font-size:20px; color:#c0392b; font-weight:bold; margin: 10px 0;">
+                    <?= htmlspecialchars($car1['price']) ?>
+                </div>
+                
+                <table class="spec-table">
+                    <tr><td class="spec-label">Engine</td><td class="spec-val"><?= htmlspecialchars($car1['engine']) ?></td></tr>
+                    <tr><td class="spec-label">Trans.</td><td class="spec-val"><?= htmlspecialchars($car1['transmission']) ?></td></tr>
+                    <tr><td class="spec-label">Chassis</td><td class="spec-val"><?= htmlspecialchars($car1['chassis']) ?></td></tr>
+                    <tr><td class="spec-label">Perf.</td><td class="spec-val"><?= htmlspecialchars($car1['performance']) ?></td></tr>
+                </table>
+            <?php else: ?>
+                <div style="padding: 50px; color:#aaa;">Select a car to view specs</div>
+            <?php endif; ?>
+        </div>
 
+        <!-- CAR 2 -->
+        <div class="car-col">
+            <?php if ($car2): ?>
+                <div class="car-img-box">
+                    <img src="../display_image.php?id=<?= $car2['id'] ?>" onerror="this.src='../Images/proton.png'">
+                </div>
+                <h2><?= htmlspecialchars($car2['model']) ?></h2>
+                <h4 style="color:#777;"><?= htmlspecialchars($car2['variant']) ?></h4>
+                <div style="font-size:20px; color:#c0392b; font-weight:bold; margin: 10px 0;">
+                    <?= htmlspecialchars($car2['price']) ?>
+                </div>
+
+                <table class="spec-table">
+                    <tr><td class="spec-label">Engine</td><td class="spec-val"><?= htmlspecialchars($car2['engine']) ?></td></tr>
+                    <tr><td class="spec-label">Trans.</td><td class="spec-val"><?= htmlspecialchars($car2['transmission']) ?></td></tr>
+                    <tr><td class="spec-label">Chassis</td><td class="spec-val"><?= htmlspecialchars($car2['chassis']) ?></td></tr>
+                    <tr><td class="spec-label">Perf.</td><td class="spec-val"><?= htmlspecialchars($car2['performance']) ?></td></tr>
+                </table>
+            <?php else: ?>
+                <div style="padding: 50px; color:#aaa;">Select a car to view specs</div>
+            <?php endif; ?>
+        </div>
+    </div>
+    
+    <div style="text-align:center; margin-top:30px;">
+        <a href="models.php" style="background:#000; color:#fff; padding:10px 20px; border-radius:15px; text-decoration:none;">Back to Models</a>
+    </div>
 </div>
 
 <script>
-const carData = <?= json_encode($carDetails); ?>;
-
-function updateCar(num) {
-    const select = document.getElementById("car" + num).value;
-    const imgEl = document.getElementById("img" + num);
-    
-    if (!carData[select]) {
-        // Reset if invalid or empty
-        imgEl.src = "Images/proton.png";
-        document.getElementById("price" + num).innerText   = "";
-        document.getElementById("engine" + num).innerText  = "";
-        document.getElementById("trans" + num).innerText   = "";
-        document.getElementById("chassis" + num).innerText = "";
-        document.getElementById("perf" + num).innerText    = "";
-        return;
-    }
-
-    const data = carData[select];
-
-    document.getElementById("price" + num).innerText   = data.price;
-    document.getElementById("engine" + num).innerText  = data.engine;
-    document.getElementById("trans" + num).innerText   = data.transmission;
-    document.getElementById("chassis" + num).innerText = data.chassis;
-    document.getElementById("perf" + num).innerText    = data.performance;
-    
-    // IMAGE LOGIC: Try dynamic, fail to static model image
-    imgEl.src = "../display_image.php?id=" + data.id + "&t=" + new Date().getTime();
-    imgEl.onerror = function() {
-        this.src = "../Images/" + data.model.toLowerCase() + ".png";
-    };
-}
-
-function testDrive(num) {
-    const car = document.getElementById("car" + num).value;
-    if (!car) {
-        showToast("Please select a car first.", "warning");
-        return;
-    }
-    window.location.href = "test_drive.php?car=" + encodeURIComponent(car);
-}
-
-// Initial check for URL preselect
-if ("<?= $preselect ?>" !== "") {
-    updateCar(1);
-    // Optionally updateCar(2) to something default? No requirement.
+function updateCompare() {
+    const c1 = document.getElementById('select1').value;
+    const c2 = document.getElementById('select2').value;
+    window.location.href = '?car1=' + c1 + '&car2=' + c2;
 }
 </script>
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
+
 </body>
 </html>

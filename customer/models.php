@@ -228,6 +228,9 @@ body {
     </div>
 
     <div class="models-grid">
+        <div style="grid-column: 1 / -1; text-align: right; margin-bottom: 20px;">
+            <a href="compare_models.php" class="btn" style="background:#333; font-size:14px;">Compare Models</a>
+        </div>
         <?php while ($row = mysqli_fetch_assoc($result)):
             $model = $row['model'];
             $image = $modelImages[$model] ?? '../Images/default.png';
