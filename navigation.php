@@ -165,6 +165,10 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
                 </div>
                 
                 <div class="nav-item">
+                    <a href="<?= $prefix ?>customer/settings.php" class="nav-link">Settings</a>
+                </div>
+
+                <div class="nav-item">
                     <a href="<?= $prefix ?>customer/compare_models.php" class="nav-link">Compare Models</a>
                 </div>
                 

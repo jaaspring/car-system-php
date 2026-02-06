@@ -15,7 +15,6 @@ This system allows users to browse cars, book test drives, compare models, and c
 - **Secure Authentication**: Prepared statements and role-based access control.
 
 ### Enhancement Features (Integration Part 2)
-- **Modular Directory Structure**: Separate `/admin` and `/customer` folders for clean module isolation.
 - **Loan Calculator**: Estimate monthly payments with history tracking.
 - **Compare Models**: Side-by-side technical comparison of different Proton models.
 - **Advanced Admin Analytics**:

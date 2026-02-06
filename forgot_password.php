@@ -3,41 +3,37 @@ session_start();
 include('db_connection.php');
 
 $error_message = '';
+$success_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $email = $_POST['email'];
 
-    // Use prepared statements to prevent SQL injection
-    $sql = "SELECT * FROM users WHERE username = ?";
+    $sql = "SELECT id FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $username);
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        if (password_verify($password, $row['password'])) {
-            // Set session variables
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['name'] = $row['name'];
-            $_SESSION['role'] = $row['role']; // Add role to the session
+        $token = bin2hex(random_bytes(16));
+        $token_hash = hash("sha256", $token);
+        $expiry = date("Y-m-d H:i:s", time() + 60 * 30); // 30 minutes expiry
 
-            // Redirect based on role
-            if ($row['role'] === 'admin') {
-                header("Location: admin/admin_dashboard.php"); // Admin dashboard
-            } else {
-                header("Location: customer/user_dashboard.php"); // User dashboard
-            }
-            exit();
-        } else {
-            $error_message = "Incorrect password.";
-        }
+        $sql = "UPDATE users SET reset_token_hash = ?, reset_token_expires_at = ? WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $token_hash, $expiry, $email);
+        $stmt->execute();
+
+        // In a real app, send email here. For now, simulate it.
+        // Assuming the app URL handling logic.
+        $resetLink = "http://localhost/car/reset_password.php?token=" . $token;
+        
+        $success_message = "Password reset link has been generated (Simulation): <br> <a href='$resetLink' style='color: white; text-decoration: underline;'>Click here to reset password</a>";
     } else {
-        $error_message = "No user found with that username.";
+        // Don't reveal if user exists or not for security, but for this project maybe it's fine.
+        // Let's be generic.
+        $success_message = "If an account with that email exists, a reset link has been sent.";
     }
-    $stmt->close();
 }
 ?>
 
@@ -46,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Calculator System</title>
+    <title>Forgot Password - Loan Calculator System</title>
     <style>
         * {
             margin: 0;
@@ -87,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             object-fit: contain;
         }
 
-        .sign-up-btn {
+        .back-btn {
             background: transparent;
             color: #fff;
             border: none;
@@ -99,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             text-decoration: none;
         }
 
-        .sign-up-btn:hover {
+        .back-btn:hover {
             opacity: 0.8;
         }
 
@@ -113,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 40px 20px;
         }
 
-        /* Login Container */
+        /* Login Container (Reused for consistency) */
         .login-container {
             text-align: center;
             width: 100%;
@@ -124,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 32px;
             font-weight: 700;
             color: #000;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             letter-spacing: 2px;
             font-family: 'Century Gothic', sans-serif;
         }
@@ -169,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
         }
 
-        .login-btn {
+        .submit-btn {
             margin-top: 20px;
             padding: 12px 50px;
             background-color: #000;
@@ -186,16 +182,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-family: 'Century Gothic', sans-serif;
         }
 
-        .login-btn:hover {
+        .submit-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .login-btn:active {
+        .submit-btn:active {
             transform: translateY(0);
         }
 
-        /* Error Message */
+        /* Messages */
         .error-message {
             background-color: rgba(220, 53, 69, 0.9);
             color: white;
@@ -204,6 +200,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin-bottom: 20px;
             font-size: 14px;
             font-weight: 600;
+        }
+
+        .success-message {
+            background-color: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        
+        .description {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
         }
 
         /* Responsive */
@@ -228,39 +242,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="header">
         <div class="logo">
             <div class="logo-img">
-                <!-- Replace with your actual logo path -->
                 <img src="Images/proton.png" alt="Proton Logo">
             </div>
         </div>
-        <a href="sign_up.php" class="sign-up-btn">Sign Up</a>
+        <a href="login.php" class="back-btn">Back to Login</a>
     </div>
 
     <div class="main-content">
         <div class="login-container">
-            <h1 class="login-title">LOG IN</h1>
+            <h1 class="login-title">FORGOT PASSWORD</h1>
             
+            <p class="description">
+                Enter your email address below and we'll send you a link to reset your password.
+            </p>
+
             <?php if (!empty($error_message)): ?>
                 <div class="error-message">
                     <?php echo htmlspecialchars($error_message); ?>
                 </div>
             <?php endif; ?>
 
+            <?php if (!empty($success_message)): ?>
+                <div class="success-message">
+                    <?php echo $success_message; // Allow HTML for the link ?>
+                </div>
+            <?php endif; ?>
+
             <form class="login-form" method="POST" action="">
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-input" type="text" id="username" name="username" required>
+                    <label class="form-label" for="email">Email Address</label>
+                    <input class="form-input" type="email" id="email" name="email" required>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-input" type="password" id="password" name="password" required>
-                </div>
-                
-                <div style="text-align: right; margin-top: -20px;">
-                    <a href="forgot_password.php" style="color: #000; text-decoration: none; font-size: 14px; font-weight: 600;">Forgot Password?</a>
-                </div>
-
-                <button class="login-btn" type="submit">LOG IN</button>
+                <button class="submit-btn" type="submit">SEND RESET LINK</button>
             </form>
         </div>
     </div>

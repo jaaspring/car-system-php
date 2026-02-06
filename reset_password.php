@@ -3,41 +3,52 @@ session_start();
 include('db_connection.php');
 
 $error_message = '';
+$success_message = '';
+$token = $_GET['token'] ?? '';
+
+if (empty($token)) {
+    die("Invalid token.");
+}
+
+$token_hash = hash("sha256", $token);
+
+$sql = "SELECT * FROM users WHERE reset_token_hash = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $token_hash);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if ($user === null) {
+    die("Token not found");
+}
+
+if (strtotime($user['reset_token_expires_at']) <= time()) {
+    die("Token has expired");
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
     $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
 
-    // Use prepared statements to prevent SQL injection
-    $sql = "SELECT * FROM users WHERE username = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        if (password_verify($password, $row['password'])) {
-            // Set session variables
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['name'] = $row['name'];
-            $_SESSION['role'] = $row['role']; // Add role to the session
-
-            // Redirect based on role
-            if ($row['role'] === 'admin') {
-                header("Location: admin/admin_dashboard.php"); // Admin dashboard
-            } else {
-                header("Location: customer/user_dashboard.php"); // User dashboard
-            }
-            exit();
-        } else {
-            $error_message = "Incorrect password.";
-        }
+    if ($password !== $confirm_password) {
+        $error_message = "Passwords do not match.";
+    } elseif (strlen($password) < 6) {
+        $error_message = "Password must be at least 6 characters.";
     } else {
-        $error_message = "No user found with that username.";
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+        $sql = "UPDATE users SET password = ?, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("si", $password_hash, $user['id']);
+
+        if ($stmt->execute()) {
+            $success_message = "Password updated successfully. Redirecting to login...";
+            header("refresh:2;url=login.php");
+        } else {
+            $error_message = "Error updating password.";
+        }
     }
-    $stmt->close();
 }
 ?>
 
@@ -46,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Calculator System</title>
+    <title>Reset Password - Loan Calculator System</title>
     <style>
         * {
             margin: 0;
@@ -87,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             object-fit: contain;
         }
 
-        .sign-up-btn {
+        .back-btn {
             background: transparent;
             color: #fff;
             border: none;
@@ -99,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             text-decoration: none;
         }
 
-        .sign-up-btn:hover {
+        .back-btn:hover {
             opacity: 0.8;
         }
 
@@ -113,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 40px 20px;
         }
 
-        /* Login Container */
+        /* Login Container (Reused for consistency) */
         .login-container {
             text-align: center;
             width: 100%;
@@ -124,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 32px;
             font-weight: 700;
             color: #000;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             letter-spacing: 2px;
             font-family: 'Century Gothic', sans-serif;
         }
@@ -169,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
         }
 
-        .login-btn {
+        .submit-btn {
             margin-top: 20px;
             padding: 12px 50px;
             background-color: #000;
@@ -186,18 +197,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-family: 'Century Gothic', sans-serif;
         }
 
-        .login-btn:hover {
+        .submit-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .login-btn:active {
+        .submit-btn:active {
             transform: translateY(0);
         }
 
-        /* Error Message */
+        /* Messages */
         .error-message {
             background-color: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background-color: rgba(40, 167, 69, 0.9);
             color: white;
             padding: 12px 20px;
             border-radius: 4px;
@@ -228,16 +249,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="header">
         <div class="logo">
             <div class="logo-img">
-                <!-- Replace with your actual logo path -->
                 <img src="Images/proton.png" alt="Proton Logo">
             </div>
         </div>
-        <a href="sign_up.php" class="sign-up-btn">Sign Up</a>
+        <a href="login.php" class="back-btn">Log In</a>
     </div>
 
     <div class="main-content">
         <div class="login-container">
-            <h1 class="login-title">LOG IN</h1>
+            <h1 class="login-title">RESET PASSWORD</h1>
             
             <?php if (!empty($error_message)): ?>
                 <div class="error-message">
@@ -245,22 +265,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             <?php endif; ?>
 
+            <?php if (!empty($success_message)): ?>
+                <div class="success-message">
+                    <?php echo htmlspecialchars($success_message); ?>
+                </div>
+            <?php endif; ?>
+
             <form class="login-form" method="POST" action="">
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-input" type="text" id="username" name="username" required>
+                    <label class="form-label" for="password">New Password</label>
+                    <input class="form-input" type="password" id="password" name="password" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-input" type="password" id="password" name="password" required>
-                </div>
-                
-                <div style="text-align: right; margin-top: -20px;">
-                    <a href="forgot_password.php" style="color: #000; text-decoration: none; font-size: 14px; font-weight: 600;">Forgot Password?</a>
+                    <label class="form-label" for="confirm_password">Confirm Password</label>
+                    <input class="form-input" type="password" id="confirm_password" name="confirm_password" required>
                 </div>
 
-                <button class="login-btn" type="submit">LOG IN</button>
+                <button class="submit-btn" type="submit">UPDATE PASSWORD</button>
             </form>
         </div>
     </div>
