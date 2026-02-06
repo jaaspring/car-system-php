@@ -45,7 +45,7 @@ input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 5px; w
 </style>
 </head>
 <body>
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="container">
     <h2>Manage Static Pages</h2>

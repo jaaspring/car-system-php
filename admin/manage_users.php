@@ -357,7 +357,7 @@ th {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- ===== CONTENT ===== -->
 <div class="container">
@@ -518,7 +518,7 @@ if (isset($_GET['add']) || $editUser) {
 
 </div>
 
-<?php include('../confirm_modal.php'); ?>
+<?php include('../widget/confirm_modal.php'); ?>
 
 <script src="../assets/js/toast.js"></script>
 <script>

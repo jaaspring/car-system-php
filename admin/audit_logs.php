@@ -85,7 +85,7 @@ tr:nth-child(even) { background: #f9f9f9; }
 </head>
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="container">
     <h2>System Audit Logs</h2>

@@ -177,7 +177,7 @@ body {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- MAIN -->
 <div class="main-content">

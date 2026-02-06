@@ -333,7 +333,7 @@ input {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- ===== MAIN CONTENT ===== -->
 <div class="main-content">
@@ -486,7 +486,7 @@ if (isset($_GET['add']) || $editCar) {
 </div>
 </div>
 
-<?php include('../confirm_modal.php'); ?>
+<?php include('../widget/confirm_modal.php'); ?>
 
 <script src="../assets/js/toast.js"></script>
 <script>

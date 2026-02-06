@@ -262,7 +262,7 @@ select, input {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- CONTENT -->
 <div class="main-content">

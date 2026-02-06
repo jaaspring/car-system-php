@@ -382,7 +382,7 @@ tr:hover { background: #f1f1f1; }
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- CONTENT -->
 <div class="main-content">
@@ -571,7 +571,7 @@ window.onclick = function(event) {
 }
 </script>
 
-<?php include('../confirm_modal.php'); ?>
+<?php include('../widget/confirm_modal.php'); ?>
 
 <script>
 function confirmUpdate(id) {

@@ -52,7 +52,7 @@ h2 { text-align:center; margin-bottom:30px; }
 </style>
 </head>
 <body>
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 <div class="container">
     <h2>Customer Reviews</h2>
     <?php if (isset($_GET['toast_msg'])): ?>

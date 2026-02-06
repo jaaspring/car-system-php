@@ -259,7 +259,7 @@ $user = $result->fetch_assoc();
 <?php 
 // Ensure correct path to navigation since we are in customer folder
 $active_page = 'settings';
-include('../navigation.php'); 
+include('../widget/navigation.php'); 
 ?>
 
 <div class="main-content">

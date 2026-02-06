@@ -82,6 +82,7 @@ $defaultId      = $variantImageMap[$defaultVariant];
 <meta charset="UTF-8">
 <title><?php echo htmlspecialchars($selectedModel); ?> Details</title>
 
+<link rel="stylesheet" href="../assets/css/toast.css">
 <!-- IMPORT DASHBOARD STYLES FOR CONSISTENCY -->
 <style>
 * {
@@ -308,7 +309,7 @@ select {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="main-content">
     <div class="details-container">

@@ -386,7 +386,7 @@ button:hover {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="main-content">
 
@@ -624,7 +624,7 @@ function confirmBooking() {
 }
 </script>
 
-<?php include('../confirm_modal.php'); ?>
+<?php include('../widget/confirm_modal.php'); ?>
 
 </body>
 </html>

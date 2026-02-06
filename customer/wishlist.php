@@ -121,7 +121,7 @@ h1 { text-align: center; margin-bottom: 40px; font-size: 36px; }
 </head>
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="container">
     <h1>My Wishlist</h1>

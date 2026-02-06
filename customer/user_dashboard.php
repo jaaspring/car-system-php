@@ -193,7 +193,7 @@ body {
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="main-content">
 

@@ -245,7 +245,7 @@ textarea { resize: none; height: 100px; }
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="main-content">
 <div class="card">

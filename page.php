@@ -38,7 +38,7 @@ h1 { text-align:center; margin-bottom:30px; border-bottom: 2px solid #eee; paddi
 </head>
 <body>
 
-<?php include('navigation.php'); ?>
+<?php include('widget/navigation.php'); ?>
 
 <div class="container">
     <h1><?= htmlspecialchars($page['title']) ?></h1>

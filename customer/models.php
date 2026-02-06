@@ -213,12 +213,34 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* ===== WISHLIST BUTTON ===== */
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    z-index: 10;
+    color: #e74c3c;
+}
+.wishlist-btn:hover {
+    transform: scale(1.1);
+    background: #fff;
+}
 </style>
 </head>
 
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
@@ -235,13 +257,14 @@ body {
             $model = $row['model'];
             $image = $modelImages[$model] ?? '../Images/default.png';
         ?>
+            <div class="model-card">
                 <div style="position:relative;">
                     <a href="car_details.php?model=<?php echo urlencode($model); ?>">
                         <img src="<?php echo $image; ?>" alt="<?php echo htmlspecialchars($model); ?>">
                     </a>
                     <!-- Wishlist Heart -->
                     <div class="wishlist-btn" onclick="toggleWishlist(this, '<?php echo htmlspecialchars($model); ?>')">
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     </div>
                 </div>
                 <h3>PROTON <?php echo htmlspecialchars($model); ?></h3>

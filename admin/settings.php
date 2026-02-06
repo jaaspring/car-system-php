@@ -136,7 +136,7 @@ $user = $result->fetch_assoc();
 
 <?php 
 $active_page = 'settings';
-include('../navigation.php'); 
+include('../widget/navigation.php'); 
 ?>
 
 <div class="main-content">

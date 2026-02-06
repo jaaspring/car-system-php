@@ -144,7 +144,7 @@ select {
 </head>
 <body>
 
-<?php include('../navigation.php'); ?>
+<?php include('../widget/navigation.php'); ?>
 
 <div class="container" style="position:relative;">
     <h1>Compare Models</h1>
