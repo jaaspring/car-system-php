@@ -391,6 +391,7 @@ tr:hover { background: #f1f1f1; }
     </select>
 
     <button type="submit">Filter</button>
+    <a href="export_appointments.php?<?= http_build_query($_GET) ?>" class="table-btn black" style="text-decoration:none; padding:10px 20px;">Export CSV</a>
     <?php if ($date_filter || $time_filter || $location_filter || $showroom_filter || $status_filter): ?>
         <a href="manage_appointments.php" class="clear-btn">Clear</a>
     <?php endif; ?>

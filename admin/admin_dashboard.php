@@ -184,45 +184,85 @@ body {
         Manage system data, users, and test drive appointments
     </p>
 
-    <div class="card-grid">
-
-        <!-- MANAGE CARS -->
-        <a href="manage_cars.php" class="card">
-            <div class="card-img">
-                <img src="../Images/admin_manage_cars.png" alt="Manage Cars">
-            </div>
-            <div class="card-title">
-                MANAGE CARS <br>
-                <span style="font-size:12px; color:#2ecc71; font-weight:normal;">Total: <?php echo $car_count; ?> Cars</span>
-            </div>
-        </a>
-
-        <!-- MANAGE USERS -->
-        <a href="manage_users.php" class="card">
-            <div class="card-img">
-                <img src="../Images/admin_manage_users.png" alt="Manage Users">
-            </div>
-            <div class="card-title">
-                MANAGE USERS <br>
-                <span style="font-size:12px; color:#3498db; font-weight:normal;">Total: <?php echo $user_count; ?> Users</span>
-            </div>
-        </a>
-
-        <!-- MANAGE APPOINTMENTS -->
-        <a href="manage_appointments.php" class="card">
-            <div class="card-img">
-                <img src="../Images/admin_manage_appointments.png" alt="Manage Appointments">
-            </div>
-            <div class="card-title">
-                MANAGE APPOINTMENTS <br>
-                <span style="font-size:12px; color:#e74c3c; font-weight:normal;">
-                    <?php echo $appt_count; ?> Pending / <?php echo $appt_total; ?> Total
-                </span>
-            </div>
-        </a>
-
+    <div class="card-grid" style="margin-bottom: 40px;">
+        <!-- ... existing cards ... -->
     </div>
+
+    <!-- CHARTS SECTION -->
+    <div style="width: 100%; max-width: 1200px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 50px;">
+        <!-- Line Chart -->
+        <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <h3 style="text-align:center; margin-bottom:15px;">Monthly Appointments</h3>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+        
+        <!-- Pie Chart -->
+        <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <h3 style="text-align:center; margin-bottom:15px;">Status Distribution</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Bar Chart (Full Width) -->
+    <div style="width: 100%; max-width: 1200px; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 50px;">
+        <h3 style="text-align:center; margin-bottom:15px;">Top 5 Popular Car Models</h3>
+        <canvas id="popularCarsChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('chart_data.php')
+            .then(response => response.json())
+            .then(data => {
+                // 1. Monthly Line Chart
+                new Chart(document.getElementById('monthlyChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.monthly_appointments.labels,
+                        datasets: [{
+                            label: 'Appointments',
+                            data: data.monthly_appointments.data,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+
+                // 2. Status Pie Chart
+                new Chart(document.getElementById('statusChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.status_distribution.labels,
+                        datasets: [{
+                            data: data.status_distribution.data,
+                            backgroundColor: ['#f39c12', '#2ecc71', '#e74c3c']
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+
+                // 3. Popular Cars Bar Chart
+                new Chart(document.getElementById('popularCarsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.popular_cars.labels,
+                        datasets: [{
+                            label: 'Bookings',
+                            data: data.popular_cars.data,
+                            backgroundColor: '#9b59b6'
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+            });
+    });
+    </script>
 </div>
+
 
 </body>
 </html>
