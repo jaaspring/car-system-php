@@ -223,6 +223,7 @@ th {
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Plan Name</th>
                 <th>Vehicle</th>
                 <th>Variant</th>
                 <th>Paint Type</th>
@@ -240,6 +241,7 @@ th {
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
             <tr>
                 <td><?= $row['id'] ?></td>
+                <td><strong><?= htmlspecialchars($row['plan_name'] ?? 'My Plan') ?></strong></td>
                 <td><?= htmlspecialchars($row['vehicle']) ?></td>
                 <td><?= htmlspecialchars($row['variant']) ?></td>
                 <td><?= htmlspecialchars($row['paint_type']) ?></td>

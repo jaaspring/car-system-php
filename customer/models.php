@@ -235,10 +235,15 @@ body {
             $model = $row['model'];
             $image = $modelImages[$model] ?? '../Images/default.png';
         ?>
-            <div class="model-card">
-                <a href="car_details.php?model=<?php echo urlencode($model); ?>">
-                    <img src="<?php echo $image; ?>" alt="<?php echo htmlspecialchars($model); ?>">
-                </a>
+                <div style="position:relative;">
+                    <a href="car_details.php?model=<?php echo urlencode($model); ?>">
+                        <img src="<?php echo $image; ?>" alt="<?php echo htmlspecialchars($model); ?>">
+                    </a>
+                    <!-- Wishlist Heart -->
+                    <div class="wishlist-btn" onclick="toggleWishlist(this, '<?php echo htmlspecialchars($model); ?>')">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </div>
+                </div>
                 <h3>PROTON <?php echo htmlspecialchars($model); ?></h3>
             </div>
         <?php endwhile; ?>
@@ -246,13 +251,32 @@ body {
 
     <!-- BACK BUTTON -->
     <div class="bottom-buttons">
+        <a href="wishlist.php" class="btn" style="background:#e74c3c;">My Wishlist</a>
         <a href="user_dashboard.php" class="btn btn-back">Back</a>
     </div>
 
 </div>
 
 <script>
-// No exit function needed
+function toggleWishlist(btn, model) {
+    // Note: models.php lists 'models' (X50, X70), but wishlist links to specific 'car_id'.
+    // Since models.php is a high-level view, we might need to change how we handle this.
+    // The previous plan assumed car cards had IDs. 
+    // models.php currently shows DISTINCT models. 
+    // FIX: models.php currently links to car_details.php?model=X50.
+    // We can't easily wishlist a "Model" generally unless we change DB or pick a default variant.
+    // OPTION: Only put wishlist on car_details.php (specific variant) OR car_list.php.
+    // However, user expects it here. Let's redirect to 'wishlist' logic or just alert 
+    // "Please select a variant to wishlist" or we update the plan.
+    
+    // For now, let's implement the Wishlist page and put the heart on `manage_cars` style list if we had one for customers.
+    // But wait, `compare_models.php` allows picking specific cars.
+    // `car_details.php` probably lists variants. Let's check `car_details.php`.
+    
+    alert("Please select a specific variant to add to wishlist.");
+    window.location.href = "car_details.php?model=" + encodeURIComponent(model);
+    e.preventDefault();
+}
 </script>
 
 <script src="../assets/js/toast.js"></script>

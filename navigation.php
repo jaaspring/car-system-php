@@ -146,7 +146,13 @@ require_once $prefix . 'lang_config.php'; // Load Language
                     <a href="<?= $prefix ?>admin/manage_appointments.php" class="nav-link">Manage Appointments</a>
                 </div>
                 <div class="nav-item">
-                    <a href="<?= $prefix ?>admin/admin_view_reviews.php" class="nav-link">Manage Reviews</a>
+                    <a href="<?= $prefix ?>admin/manage_pages.php" class="nav-link">Manage Pages</a>
+                </div>
+                <div class="nav-item">
+                    <a href="<?= $prefix ?>admin/manage_reviews.php" class="nav-link">Manage Reviews</a>
+                </div>
+                <div class="nav-item">
+                    <a href="<?= $prefix ?>admin/audit_logs.php" class="nav-link">Audit Logs</a>
                 </div>
             <?php else: ?>
                 <!-- User Navigation -->
@@ -206,4 +212,8 @@ require_once $prefix . 'lang_config.php'; // Load Language
         
         <a href="<?= $prefix ?>logout.php" class="logout-btn"><?= $L['nav_logout'] ?? 'Logout' ?></a>
     </div>
+</div>
+<div style="background:#000; color:#fff; padding:10px; text-align:center; font-size:12px;">
+    <a href="<?= $prefix ?>page.php?slug=about" style="color:#fff; text-decoration:none; margin:0 10px;">About Us</a> | 
+    <a href="<?= $prefix ?>page.php?slug=contact" style="color:#fff; text-decoration:none; margin:0 10px;">Contact Us</a>
 </div>

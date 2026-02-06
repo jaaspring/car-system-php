@@ -15,14 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_loan'])) {
 
     $stmt = mysqli_prepare(
         $conn,
-        "INSERT INTO loan_history 
-        (user_id, vehicle, variant, paint_type, terms, down_payment, interest_rate, monthly_installment)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO loan_history 
+        (user_id, vehicle, variant, paint_type, terms, down_payment, interest_rate, monthly_installment, plan_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     mysqli_stmt_bind_param(
         $stmt,
-        "isssiddi",
+        "issssiddis",
         $_SESSION['user_id'],
         $_POST['vehicle'],
         $_POST['variant'],
@@ -30,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_loan'])) {
         $_POST['terms'],
         $_POST['down_payment'],
         $_POST['interest_rate'],
-        $_POST['monthly_installment']
+        $_POST['monthly_installment'],
+        $_POST['plan_name']
     );
 
     mysqli_stmt_execute($stmt);
@@ -280,6 +281,11 @@ select, input {
         <div class="form-section">
             <h2>Loan Calculator</h2>
 
+            <h2>Loan Calculator</h2>
+
+            <label>Plan Name (Optional)</label>
+            <input type="text" id="planName" placeholder="e.g. My Dream X50" style="margin-top:5px;">
+
             <label>Vehicle</label>
             <select id="vehicle" onchange="updateVariants()">
                 <option value="">-- Select Vehicle --</option>
@@ -320,6 +326,7 @@ select, input {
                 <input type="hidden" name="down_payment" id="saveDown">
                 <input type="hidden" name="interest_rate" id="saveRate">
                 <input type="hidden" name="monthly_installment" id="saveInstallment">
+                <input type="hidden" name="plan_name" id="savePlanName">
                 <input type="hidden" name="save_loan" value="1">
             </form>
 
@@ -460,6 +467,7 @@ function saveLoan() {
     document.getElementById('saveDown').value = document.getElementById('downPayment').value;
     document.getElementById('saveRate').value = document.getElementById('interest').value;
     document.getElementById('saveInstallment').value = lastInstallment.toFixed(2);
+    document.getElementById('savePlanName').value = document.getElementById('planName').value || 'My Plan';
 
     document.getElementById('saveForm').submit();
 }

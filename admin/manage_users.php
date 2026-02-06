@@ -17,6 +17,11 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $stmt->close();
+
+    // LOGGING
+    require_once 'log_helper.php';
+    logAction(null, 'Delete User', "Deleted user ID: $id");
+
     header("Location: manage_users.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
     exit();
 }
@@ -72,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->execute()) {
         // Success
         $message = $id ? "Successfully Update" : "Successfully Add";
+        
+        // LOGGING
+        require_once 'log_helper.php';
+        logAction(null, $id ? 'Update User' : 'Add User', "User: $username");
+
         header("Location: manage_users.php?toast_msg=" . urlencode($message) . "&toast_type=success");
         exit();
     }

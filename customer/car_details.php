@@ -351,6 +351,10 @@ select {
                 <div class="image-buttons">
                     <button class="btn" onclick="bookTestDrive()">Test Drive</button>
                     <button class="btn" onclick="compareModel()">Compare Model</button>
+                    <button class="btn" style="background:#e74c3c;" onclick="toggleWishlist()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:5px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        Wishlist
+                    </button>
                 </div>
             </div>
         </div>
@@ -365,7 +369,7 @@ select {
 <script>
 const variantPrices = <?php echo json_encode($variantPriceMap); ?>;
 const variantPaints = <?php echo json_encode($variantPaintTypes); ?>;
-const variantImages = <?php echo json_encode($variantImageMap); ?>;
+const variantImages = <?php echo json_encode($variantImageMap); ?>; // Variant Name -> Car ID
 
 function updateDetails() {
     const variant = document.getElementById("variant").value;
@@ -396,14 +400,38 @@ function bookTestDrive() {
 
 function compareModel() {
     const variant = document.getElementById("variant").value;
-    const model = <?php echo json_encode($selectedModel); ?>;
-    const fullString = model + " - " + variant;
-    window.location.href = "compare_models.php?car=" + encodeURIComponent(fullString);
+    // We need Car ID for compare model, but the compare tool takes IDs.
+    // variantImages[variant] gives us the ID!
+    const carId = variantImages[variant];
+    // However, compare tool expects car1 and car2 GET params.
+    // If we come from here, maybe we pre-select car1?
+    window.location.href = "compare_models.php?car1=" + carId;
+}
+
+function toggleWishlist() {
+    const variant = document.getElementById("variant").value;
+    const carId = variantImages[variant];
+
+    fetch('../ajax/toggle_wishlist.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ car_id: carId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.action === 'added' ? "Added to Wishlist!" : "Removed from Wishlist!", "success");
+        } else {
+            showToast(data.message, "error");
+        }
+    })
+    .catch(err => console.error(err));
 }
 
 // Initialize
 updateDetails();
 </script>
+<script src="../assets/js/toast.js"></script>
 
 </body>
 </html>

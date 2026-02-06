@@ -21,6 +21,8 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
+        require_once 'log_helper.php';
+        logAction(null, 'Delete Car', "Deleted car ID: $id");
         header("Location: manage_cars.php?toast_msg=" . urlencode("Successfully Deleted") . "&toast_type=success");
         exit();
     } else {
@@ -109,6 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             $message = $id ? "Successfully Update" : "Successfully Add";
+            
+            require_once 'log_helper.php';
+            logAction(null, $id ? 'Update Car' : 'Add Car', "Car Model: $model");
+
             header("Location: manage_cars.php?toast_msg=" . urlencode($message) . "&toast_type=success");
             exit();
         } else {

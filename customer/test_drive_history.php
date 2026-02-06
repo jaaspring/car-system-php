@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
 
 $stmt = $conn->prepare(
     "SELECT td.id, td.car_model_variant, td.location, td.showroom, td.date, td.time, td.status,
-            tr.id AS review_id, tr.rating AS user_rating
+            tr.id AS review_id, tr.rating AS user_rating, tr.admin_reply
      FROM test_drive td
      LEFT JOIN test_drive_reviews tr ON td.id = tr.test_drive_id
      WHERE td.user_id = ?
@@ -259,6 +259,11 @@ body.modal-open .container {
             <span class="status" style="background: #f1c40f; color: #000; font-weight: bold; border: 1px solid #000;">
                 Rated: <?= str_repeat('★', $row['user_rating']) . str_repeat('☆', 5 - $row['user_rating']) ?>
             </span>
+            <?php if (!empty($row['admin_reply'])): ?>
+                <div style="margin-top:10px; background:#e8f6f3; padding:10px; border-radius:8px; width:100%; text-align:left; font-size:13px;">
+                    <strong>Admin Reply:</strong> <?= htmlspecialchars($row['admin_reply']) ?>
+                </div>
+            <?php endif; ?>
         <?php else: ?>
             <a class="btn"
                href="rating.php?test_drive_id=<?= $row['id'] ?>&car=<?= urlencode($row['car_model_variant']) ?>">
