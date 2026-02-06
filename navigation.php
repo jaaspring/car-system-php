@@ -9,7 +9,9 @@ $active_page = $active_page ?? '';
 
 // Path Adjustment Logic
 $current_dir = basename(getcwd());
-$prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : '';
+$prefix = ($current_dir === 'admin' || $current_dir === 'customer' || $current_dir === 'lang') ? '../' : '';
+
+require_once $prefix . 'lang_config.php'; // Load Language
 ?>
 
 <style>
@@ -149,7 +151,7 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
             <?php else: ?>
                 <!-- User Navigation -->
                 <div class="nav-item">
-                    <a href="<?= $prefix ?>customer/user_dashboard.php" class="nav-link">Home Page</a>
+                    <a href="<?= $prefix ?>customer/user_dashboard.php" class="nav-link"><?= $L['nav_home'] ?? 'Home' ?></a>
                 </div>
                 <div class="nav-item">
                     <a href="<?= $prefix ?>customer/models.php" class="nav-link">Models</a>
@@ -160,22 +162,20 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
                     <a href="<?= $prefix ?>customer/loan_calculator.php" class="nav-link">Loan Calculator</a>
                     <div class="dropdown-content">
                         <a href="<?= $prefix ?>customer/loan_calculator.php">Loan Calculator</a>
-                        <a href="<?= $prefix ?>customer/loan_history.php">Loan History</a>
+                        <a href="<?= $prefix ?>customer/loan_history.php"><?= $L['nav_history'] ?? 'My History' ?></a>
                     </div>
                 </div>
                 
-
-
                 <div class="nav-item">
                     <a href="<?= $prefix ?>customer/compare_models.php" class="nav-link">Compare Models</a>
                 </div>
                 
                 <!-- Book Dropdown -->
                 <div class="nav-item dropdown">
-                    <a href="<?= $prefix ?>customer/test_drive.php" class="nav-link">Book</a>
+                    <a href="<?= $prefix ?>customer/test_drive.php" class="nav-link"><?= $L['nav_test_drive'] ?? 'Book' ?></a>
                     <div class="dropdown-content">
-                        <a href="<?= $prefix ?>customer/test_drive.php">Book Test Drive</a>
-                        <a href="<?= $prefix ?>customer/test_drive_history.php">Test Drive History</a>
+                        <a href="<?= $prefix ?>customer/test_drive.php"><?= $L['nav_test_drive'] ?? 'Book Test Drive' ?></a>
+                        <a href="<?= $prefix ?>customer/test_drive_history.php"><?= $L['nav_history'] ?? 'Test Drive History' ?></a>
                         <a href="<?= $prefix ?>customer/rating.php">Rating</a>
                     </div>
                 </div>
@@ -183,6 +183,11 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
         </nav>
     </div>
     <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
+        <!-- Language Toggle -->
+        <?php $newLang = ($_SESSION['lang'] == 'en') ? 'my' : 'en'; ?>
+        <a href="?lang=<?= $newLang ?>" style="color:#fff; text-decoration:none; font-weight:bold; border:1px solid #fff; padding:5px 10px; border-radius:15px;">
+            <?= strtoupper($_SESSION['lang']) ?>
+        </a>
         <!-- User Profile Pic & Name -->
         <?php 
         $uid = $_SESSION['user_id'] ?? 0; // Assuming session has user_id
@@ -194,11 +199,11 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
         </div>
 
         <?php if ($role === 'admin'): ?>
-            <a href="<?= $prefix ?>admin/settings.php" class="nav-link">Settings</a>
+            <a href="<?= $prefix ?>admin/settings.php" class="nav-link"><?= $L['nav_settings'] ?? 'Settings' ?></a>
         <?php else: ?>
-            <a href="<?= $prefix ?>customer/settings.php" class="nav-link">Settings</a>
+            <a href="<?= $prefix ?>customer/settings.php" class="nav-link"><?= $L['nav_settings'] ?? 'Settings' ?></a>
         <?php endif; ?>
         
-        <a href="<?= $prefix ?>logout.php" class="logout-btn">Logout</a>
+        <a href="<?= $prefix ?>logout.php" class="logout-btn"><?= $L['nav_logout'] ?? 'Logout' ?></a>
     </div>
 </div>

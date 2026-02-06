@@ -29,6 +29,7 @@ A comprehensive PHP-based car management and analytics system, serving as **Part
 ```text
 ├── admin/               # Administrative tools (Dashboard, Users, Cars, Reviews)
 ├── customer/            # Customer tools (Dashboard, Models, Booking, Loans, Settings)
+├── assets/              # Shared assets (CSS, JS)
 ├── Images/              # Shared vehicle visuals
 ├── vendor/              # Composer dependencies (PHPMailer)
 ├── db_connection.php    # Centralized database logic

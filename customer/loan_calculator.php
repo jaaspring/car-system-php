@@ -67,7 +67,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 <head>
 <meta charset="UTF-8">
 <title>Loan Calculator</title>
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -467,6 +467,6 @@ function saveLoan() {
 // Initial state
 resetPreview();
 </script>
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 </body>
 </html>

@@ -206,6 +206,6 @@ include('../navigation.php');
     </div>
 </div>
 
-<script src="../password_toggle.js"></script>
+<script src="../assets/js/password_toggle.js"></script>
 </body>
 </html>

@@ -14,9 +14,11 @@ $car_count = $conn->query("SELECT COUNT(*) FROM car_details")->fetch_row()[0];
 $user_count = $conn->query("SELECT COUNT(*) FROM users WHERE role='user'")->fetch_row()[0];
 $appt_count = $conn->query("SELECT COUNT(*) FROM test_drive WHERE status='Pending'")->fetch_row()[0];
 $appt_total = $conn->query("SELECT COUNT(*) FROM test_drive")->fetch_row()[0];
+
+require_once '../lang_config.php';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $_SESSION['lang'] ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -179,33 +181,66 @@ body {
 
 <!-- MAIN -->
 <div class="main-content">
-    <h1 class="dashboard-title">Admin Dashboard</h1>
+    <h1 class="dashboard-title"><?= $L['admin_dash_title'] ?? 'Admin Dashboard' ?></h1>
     <p class="dashboard-subtitle">
-        Manage system data, users, and test drive appointments
+        <?= $L['admin_dash_subtitle'] ?? 'Manage system data, users, and test drive appointments' ?>
     </p>
 
     <div class="card-grid" style="margin-bottom: 40px;">
-        <!-- ... existing cards ... -->
+        <!-- Manage Cars -->
+        <a href="manage_cars.php" class="card">
+            <div class="card-img">
+                <img src="../Images/proton_x50.jpg" alt="Car" onerror="this.src='../Images/proton.png'">
+            </div>
+            <div class="card-title">
+                <?= $L['card_manage_cars'] ?? 'MANAGE CARS' ?> <br>
+                <span style="font-size:12px; color:#2ecc71; font-weight:normal;"><?= $L['lbl_total'] ?? 'Total:' ?> <?php echo $car_count; ?></span>
+            </div>
+        </a>
+
+        <!-- Manage Users -->
+        <a href="manage_users.php" class="card">
+            <div class="card-img">
+                <img src="../Images/user_icon.png" alt="User" onerror="this.src='../Images/proton.png'">
+            </div>
+            <div class="card-title">
+                <?= $L['card_manage_users'] ?? 'MANAGE USERS' ?> <br>
+                <span style="font-size:12px; color:#3498db; font-weight:normal;"><?= $L['lbl_total'] ?? 'Total:' ?> <?php echo $user_count; ?></span>
+            </div>
+        </a>
+
+        <!-- Manage Appointments -->
+        <a href="manage_appointments.php" class="card">
+            <div class="card-img">
+                <img src="../Images/calendar_icon.png" alt="Appointment" onerror="this.src='../Images/proton.png'">
+            </div>
+            <div class="card-title">
+                <?= $L['card_manage_appt'] ?? 'MANAGE APPOINTMENTS' ?> <br>
+                <span style="font-size:12px; color:#e74c3c; font-weight:normal;">
+                    <?php echo $appt_count; ?> <?= $L['lbl_pending'] ?? 'Pending' ?> / <?php echo $appt_total; ?> <?= $L['lbl_total'] ?? 'Total' ?>
+                </span>
+            </div>
+        </a>
     </div>
 
     <!-- CHARTS SECTION -->
     <div style="width: 100%; max-width: 1200px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 50px;">
         <!-- Line Chart -->
         <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <h3 style="text-align:center; margin-bottom:15px;">Monthly Appointments</h3>
+            <h3 style="text-align:center; margin-bottom:15px;"><?= $L['chart_monthly'] ?? 'Monthly Appointments' ?></h3>
             <canvas id="monthlyChart"></canvas>
         </div>
         
         <!-- Pie Chart -->
         <div style="background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <h3 style="text-align:center; margin-bottom:15px;">Status Distribution</h3>
+            <h3 style="text-align:center; margin-bottom:15px;"><?= $L['chart_status'] ?? 'Status Distribution' ?></h3>
             <canvas id="statusChart"></canvas>
         </div>
     </div>
 
     <!-- Bar Chart (Full Width) -->
     <div style="width: 100%; max-width: 1200px; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 50px;">
-        <h3 style="text-align:center; margin-bottom:15px;">Top 5 Popular Car Models</h3>
+        <h3 style="text-align:center; margin-bottom:15px;"><?= $L['chart_popular'] ?? 'Top 5 Popular Car Models' ?></h3>
         <canvas id="popularCarsChart"></canvas>
     </div>
 

@@ -9,14 +9,15 @@ if (!isset($_SESSION['username'])) {
 
 // Get user name
 $user_name = isset($_SESSION['name']) ? $_SESSION['name'] : $_SESSION['username'];
+require_once '../lang_config.php';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $_SESSION['lang'] ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Loan Calculator System</title>
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 <style>
 * {
@@ -197,10 +198,10 @@ body {
 <div class="main-content">
 
     <div class="welcome-section">
-        <p class="welcome-text">Welcome, <?php echo htmlspecialchars($user_name); ?>!</p>
-        <h1 class="tagline">DRIVE INTO THE FUTURE OF LUXURY AND INNOVATION</h1>
+        <p class="welcome-text"><?= ($L['dash_welcome_user'] ?? 'Welcome, ') . htmlspecialchars($user_name); ?>!</p>
+        <h1 class="tagline"><?= $L['dash_tagline'] ?? 'DRIVE INTO THE FUTURE OF LUXURY AND INNOVATION' ?></h1>
         <p class="subtagline">
-            Explore a world of premium cars designed for comfort, performance, and style.
+            <?= $L['dash_subtagline'] ?? 'Explore a world of premium cars designed for comfort, performance, and style.' ?>
         </p>
     </div>
 
@@ -245,7 +246,7 @@ body {
     </div>
 
     <div class="footer">
-        © 2025 Proton Holdings Berhad
+        <?= $L['footer_text'] ?? '© 2025 Proton Holdings Berhad' ?>
     </div>
 
 </div>
@@ -270,6 +271,6 @@ function prevSlide() {
 }
 </script>
 
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 </body>
 </html>

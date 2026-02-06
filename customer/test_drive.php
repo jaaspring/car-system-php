@@ -110,8 +110,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($insert_stmt->execute()) {
-                $success_message =
-                    "Successfully Booked";
+                
+                // SEND EMAIL NOTIFICATION
+                try {
+                    require_once '../vendor/autoload.php';
+                    require_once '../config_mail.php';
+                    
+                    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+                    $mail->isSMTP();
+                    $mail->Host       = SMTP_HOST;
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = SMTP_USERNAME;
+                    $mail->Password   = SMTP_PASSWORD;
+                    $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port       = SMTP_PORT;
+
+                    // Recipients
+                    $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+                    $mail->addAddress($email, $name); // User email and name
+
+                    // Content
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Test Drive Booking Confirmation';
+                    $mail->Body    = "
+                        <h2>Booking Confirmed!</h2>
+                        <p>Dear $name,</p>
+                        <p>Your test drive for the <strong>$car_model</strong> has been successfully booked.</p>
+                        <p><strong>Details:</strong></p>
+                        <ul>
+                            <li><strong>Date:</strong> $date</li>
+                            <li><strong>Time:</strong> $time</li>
+                            <li><strong>Location:</strong> $location</li>
+                            <li><strong>Showroom:</strong> $showroom</li>
+                        </ul>
+                        <p>Please arrive 10 minutes early. See you there!</p>
+                        <br>
+                        <p>Regards,<br>Proton Loan System Team</p>
+                    ";
+
+                    $mail->send();
+                } catch (Exception $e) {
+                    // Log error but don't fail the booking
+                    error_log("Mail Error: " . $mail->ErrorInfo);
+                }
+
+                $success_message = "Successfully Booked. A confirmation email has been sent.";
             } else {
                 $error_message = "Booking failed. Please try again.";
             }

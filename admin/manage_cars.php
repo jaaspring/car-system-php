@@ -153,7 +153,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Cars</title>
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 <style>
 * {
@@ -482,7 +482,7 @@ if (isset($_GET['add']) || $editCar) {
 
 <?php include('../confirm_modal.php'); ?>
 
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 <script>
 function confirmEdit(carId) {
     showConfirm('Are you sure to edit?', function() {

@@ -1,8 +1,7 @@
 <?php
 session_start();
 include('db_connection.php');
-
-$error_message = '';
+require_once 'lang_config.php'; // Load Language
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
@@ -232,12 +231,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <img src="Images/proton.png" alt="Proton Logo">
             </div>
         </div>
-        <a href="sign_up.php" class="sign-up-btn">Sign Up</a>
+        <a href="sign_up.php" class="sign-up-btn"><?= $L['link_signup'] ?? 'Sign Up' ?></a>
     </div>
 
     <div class="main-content">
         <div class="login-container">
-            <h1 class="login-title">LOG IN</h1>
+            <h1 class="login-title"><?= $L['login_title'] ?? 'LOG IN' ?></h1>
             
             <?php if (!empty($error_message)): ?>
                 <div class="error-message">
@@ -247,20 +246,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <form class="login-form" method="POST" action="">
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
+                    <label class="form-label" for="username"><?= $L['placeholder_username'] ?? 'Username' ?></label>
                     <input class="form-input" type="text" id="username" name="username" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
+                    <label class="form-label" for="password"><?= $L['placeholder_password'] ?? 'Password' ?></label>
                     <input class="form-input" type="password" id="password" name="password" required>
                 </div>
                 
                 <div style="text-align: right; margin-top: -20px;">
-                    <a href="forgot_password.php" style="color: #000; text-decoration: none; font-size: 14px; font-weight: 600;">Forgot Password?</a>
+                    <a href="forgot_password.php" style="color: #000; text-decoration: none; font-size: 14px; font-weight: 600;"><?= $L['link_forgot_password'] ?? 'Forgot Password?' ?></a>
                 </div>
 
-                <button class="login-btn" type="submit">LOG IN</button>
+                <button class="login-btn" type="submit"><?= $L['btn_login'] ?? 'LOG IN' ?></button>
             </form>
         </div>
     </div>

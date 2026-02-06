@@ -34,7 +34,7 @@ $modelImages = [
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Models - Loan Calculator System</title>
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 <style>
 * {
@@ -252,6 +252,6 @@ body {
 // No exit function needed
 </script>
 
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 </body>
 </html>

@@ -81,6 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* =========================
    FETCH USERS
    ========================= */
+/* =========================
+   FETCH USERS WITH SEARCH & PAGINATION
+   ========================= */
+$search = $_GET['search'] ?? '';
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$limit = 10;
+$offset = ($page - 1) * $limit;
+
 $sort = $_GET['sort'] ?? 'az';
 $orderBy = "ORDER BY username ASC"; // Default
 
@@ -90,9 +99,46 @@ switch ($sort) {
     default:     $orderBy = "ORDER BY username ASC"; break;
 }
 
-$result = $conn->query(
-    "SELECT id, username, name, email, phone, role FROM users $orderBy"
-);
+// Prepare SQL with Search
+$whereClause = "WHERE 1=1";
+$params = [];
+$types = "";
+
+if ($search) {
+    $whereClause .= " AND (username LIKE ? OR name LIKE ? OR email LIKE ?)";
+    $searchTerm = "%$search%";
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $types .= "sss";
+}
+
+// Count Total for Pagination
+$countSql = "SELECT COUNT(*) FROM users $whereClause";
+if ($search) {
+    $stmtCount = $conn->prepare($countSql);
+    $stmtCount->bind_param($types, ...$params);
+    $stmtCount->execute();
+    $stmtCount->bind_result($totalRecords);
+    $stmtCount->fetch();
+    $stmtCount->close();
+} else {
+    $totalRecords = $conn->query($countSql)->fetch_row()[0];
+}
+
+$totalPages = ceil($totalRecords / $limit);
+
+// Fetch Data with Limit
+$sql = "SELECT id, username, name, email, phone, role FROM users $whereClause $orderBy LIMIT ?, ?";
+$params[] = $offset;
+$params[] = $limit;
+$types .= "ii";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
 
 /* =========================
    FETCH USER FOR EDIT
@@ -113,7 +159,7 @@ if (isset($_GET['edit'])) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Users</title>
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 <!-- Keeping existing CSS -->
 <style>
@@ -325,16 +371,29 @@ if (isset($_GET['add']) || $editUser) {
 <?php if ($viewMode === 'list'): ?>
     <!-- LIST VIEW -->
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <!-- SORT FILTER -->
-        <form method="GET" style="margin: 0; display: flex; align-items: center; gap: 10px;">
-            <label style="margin:0; font-weight:bold;">Sort By:</label>
-            <select name="sort" onchange="this.form.submit()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-                <option value="az" <?= ($_GET['sort'] ?? '') == 'az' ? 'selected' : '' ?>>A-Z (Username)</option>
-                <option value="za" <?= ($_GET['sort'] ?? '') == 'za' ? 'selected' : '' ?>>Z-A (Username)</option>
-                <option value="role" <?= ($_GET['sort'] ?? '') == 'role' ? 'selected' : '' ?>>Role</option>
-            </select>
-        </form>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <!-- SEARCH FORM -->
+            <form method="GET" style="margin:0; display:flex; gap:10px;">
+                <input type="text" name="search" placeholder="Search by name, email..." value="<?= htmlspecialchars($search) ?>" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                <button type="submit" class="btn black" style="padding: 8px 15px; font-size: 12px;">Search</button>
+                <?php if ($search): ?>
+                    <a href="manage_users.php" class="clear-btn" style="background:#888; color:#fff; padding:8px 12px; border-radius:20px; font-size:12px; font-weight:bold;text-decoration:none;">Clear</a>
+                <?php endif; ?>
+            </form>
+
+            <!-- SORT FILTER -->
+            <form method="GET" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                <label style="margin:0; font-weight:bold;">Sort:</label>
+                <select name="sort" onchange="this.form.submit()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="az" <?= $sort == 'az' ? 'selected' : '' ?>>A-Z</option>
+                    <option value="za" <?= $sort == 'za' ? 'selected' : '' ?>>Z-A</option>
+                    <option value="role" <?= $sort == 'role' ? 'selected' : '' ?>>Role</option>
+                </select>
+            </form>
+        </div>
 
         <a href="?add=1" class="btn green" style="text-decoration:none;">+ Add New User</a>
     </div>
@@ -376,6 +435,27 @@ if (isset($_GET['add']) || $editUser) {
 
     </tbody>
     </table>
+
+    <!-- PAGINATION -->
+    <?php if ($totalPages > 1): ?>
+    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+        <?php if ($page > 1): ?>
+            <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>" class="btn black" style="padding: 8px 15px;">&laquo; Prev</a>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>" 
+               class="btn" 
+               style="padding: 8px 12px; background: <?= $i == $page ? '#000' : '#ddd' ?>; color: <?= $i == $page ? '#fff' : '#000' ?>;">
+                <?= $i ?>
+            </a>
+        <?php endfor; ?>
+
+        <?php if ($page < $totalPages): ?>
+            <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&sort=<?= $sort ?>" class="btn black" style="padding: 8px 15px;">Next &raquo;</a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
 <?php else: ?>
     <!-- FORM VIEW -->
@@ -430,7 +510,7 @@ if (isset($_GET['add']) || $editUser) {
 
 <?php include('../confirm_modal.php'); ?>
 
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 <script>
 function confirmEdit(userId) {
     showConfirm('Are you sure to edit?', function() {

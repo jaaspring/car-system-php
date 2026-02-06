@@ -32,11 +32,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $appointment_id = intval($_POST['appointment_id']);
     $status = $_POST['status'];
 
+    // Fetch User Email for Notification
+    $userQ = $conn->prepare("SELECT u.email, u.name, td.car_model_variant, td.date, td.time 
+                             FROM test_drive td 
+                             JOIN users u ON td.user_id = u.id 
+                             WHERE td.id = ?");
+    $userQ->bind_param("i", $appointment_id);
+    $userQ->execute();
+    $userRes = $userQ->get_result();
+    
+    if ($userRes->num_rows > 0) {
+        $uInfo = $userRes->fetch_assoc();
+        
+        // SEND EMAIL
+        try {
+            require_once '../vendor/autoload.php';
+            require_once '../config_mail.php'; // Ensure path is correct relative to admin/
+
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USERNAME;
+            $mail->Password   = SMTP_PASSWORD;
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($uInfo['email'], $uInfo['name']);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Test Drive Status Update';
+            
+            $statusColor = ($status == 'Completed') ? 'green' : (($status == 'Cancelled') ? 'red' : 'orange');
+            
+            $mail->Body    = "
+                <h2>Status Update</h2>
+                <p>Dear {$uInfo['name']},</p>
+                <p>The status of your test drive booking for <strong>{$uInfo['car_model_variant']}</strong> on {$uInfo['date']} at {$uInfo['time']} has been updated.</p>
+                <p>New Status: <strong style='color:$statusColor'>$status</strong></p>
+                <br>
+                <p>Regards,<br>Proton Loan System Team</p>
+            ";
+
+            $mail->send();
+        } catch (Exception $e) {
+            error_log("Mail Error: " . $mail->ErrorInfo);
+        }
+    }
+    $userQ->close();
+
     $stmt = $conn->prepare("UPDATE test_drive SET status = ? WHERE id = ?");
     $stmt->bind_param("si", $status, $appointment_id);
     $stmt->execute();
     $stmt->close();
-    header("Location: manage_appointments.php?toast_msg=" . urlencode("Successfully Update") . "&toast_type=success");
+    header("Location: manage_appointments.php?toast_msg=" . urlencode("Successfully Updated & Email Sent") . "&toast_type=success");
     exit();
 }
 
@@ -96,6 +146,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 /* ===== HEADER ===== */
 .header {
@@ -536,5 +587,7 @@ function confirmDelete(appointmentId) {
 }
 </script>
 
+</script>
+<script src="../assets/js/toast.js"></script>
 </body>
 </html>

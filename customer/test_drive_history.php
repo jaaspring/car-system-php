@@ -42,7 +42,7 @@ $result = $stmt->get_result();
 <meta charset="UTF-8">
 <title>My Test Drive History</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../toast.css">
+<link rel="stylesheet" href="../assets/css/toast.css">
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -350,6 +350,6 @@ function confirmCancel() {
     </div>
 </div>
 
-<script src="../toast.js"></script>
+<script src="../assets/js/toast.js"></script>
 </body>
 </html>
