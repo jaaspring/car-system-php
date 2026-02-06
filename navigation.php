@@ -164,9 +164,7 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
                     </div>
                 </div>
                 
-                <div class="nav-item">
-                    <a href="<?= $prefix ?>customer/settings.php" class="nav-link">Settings</a>
-                </div>
+
 
                 <div class="nav-item">
                     <a href="<?= $prefix ?>customer/compare_models.php" class="nav-link">Compare Models</a>
@@ -184,5 +182,10 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
             <?php endif; ?>
         </nav>
     </div>
-    <a href="<?= $prefix ?>logout.php" class="logout-btn">Logout</a>
+    <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
+        <?php if ($role !== 'admin'): ?>
+            <a href="<?= $prefix ?>customer/settings.php" class="nav-link">Settings</a>
+        <?php endif; ?>
+        <a href="<?= $prefix ?>logout.php" class="logout-btn">Logout</a>
+    </div>
 </div>

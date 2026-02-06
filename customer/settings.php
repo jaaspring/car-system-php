@@ -18,17 +18,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $name = $_POST['name'];
         $email = $_POST['email'];
         $phone = $_POST['phone'];
-
-        $sql = "UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssi", $name, $email, $phone, $user_id);
         
-        if ($stmt->execute()) {
-            $_SESSION['name'] = $name; // Update session name
-            $success_message = "Profile updated successfully.";
+        // Handle File Upload
+        if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] == 0) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            $filename = $_FILES['profile_pic']['name'];
+            $filetype = $_FILES['profile_pic']['type'];
+            $filesize = $_FILES['profile_pic']['size'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            
+            if (in_array($ext, $allowed)) {
+                 // Check file size (e.g. 2MB)
+                 if ($filesize < 2 * 1024 * 1024) {
+                     $imgData = file_get_contents($_FILES['profile_pic']['tmp_name']);
+                     
+                     // Update with image
+                     $sql = "UPDATE users SET name = ?, email = ?, phone = ?, profile_pic = ? WHERE id = ?";
+                     $stmt = $conn->prepare($sql);
+                     $stmt->bind_param("ssssi", $name, $email, $phone, $imgData, $user_id);
+                 } else {
+                     $error_message = "File size exceeds 2MB limit.";
+                 }
+            } else {
+                $error_message = "Invalid file type. Allowed: JPG, PNG, GIF.";
+            }
         } else {
-            $error_message = "Error updating profile: " . $conn->error;
+            // Update without image
+            $sql = "UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sssi", $name, $email, $phone, $user_id);
         }
+
+        if (empty($error_message)) {
+            if (isset($stmt) && $stmt->execute()) {
+                $_SESSION['name'] = $name; // Update session name
+                $success_message = "Profile updated successfully.";
+            } else {
+                $error_message = "Error updating profile: " . $conn->error;
+            }
+        }
+        
     } elseif (isset($_POST['change_password'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
@@ -144,6 +173,7 @@ $user = $result->fetch_assoc();
 
         .form-group {
             margin-bottom: 20px;
+            position: relative; /* For password toggle */
         }
 
         .form-label {
@@ -196,6 +226,32 @@ $user = $result->fetch_assoc();
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        /* Profile Pic Preview */
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #000;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .file-input {
+            margin-top: 5px;
+        }
+
+        /* Password Toggle */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 40px;
+            cursor: pointer;
+            font-size: 20px;
+            background: none;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -219,7 +275,13 @@ include('../navigation.php');
 
         <!-- Profile Update Form -->
         <h2 class="section-title">Edit Profile</h2>
-        <form method="POST" action="">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <div class="form-group" style="text-align: center;">
+                <img src="../display_profile_pic.php?id=<?= $user['id'] ?>&t=<?= time() ?>" alt="Profile" class="profile-preview" style="margin: 0 auto 15px;">
+                <label class="form-label" for="profile_pic">Change Profile Picture</label>
+                <input type="file" name="profile_pic" id="profile_pic" class="file-input" accept="image/*">
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Username</label>
                 <input type="text" class="form-input" value="<?php echo htmlspecialchars($user['username']); ?>" disabled style="background: #f9f9f9;">
@@ -249,16 +311,19 @@ include('../navigation.php');
             <div class="form-group">
                 <label class="form-label" for="current_password">Current Password</label>
                 <input type="password" class="form-input" id="current_password" name="current_password" required>
+                <span class="password-toggle" id="toggleCurrent" onclick="togglePassword('current_password', 'toggleCurrent')">👁️</span>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="new_password">New Password</label>
                 <input type="password" class="form-input" id="new_password" name="new_password" required>
+                <span class="password-toggle" id="toggleNew" onclick="togglePassword('new_password', 'toggleNew')">👁️</span>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="confirm_password">Confirm New Password</label>
                 <input type="password" class="form-input" id="confirm_password" name="confirm_password" required>
+                <span class="password-toggle" id="toggleConfirm" onclick="togglePassword('confirm_password', 'toggleConfirm')">👁️</span>
             </div>
 
             <button type="submit" name="change_password" class="btn">Update Password</button>
@@ -266,5 +331,6 @@ include('../navigation.php');
     </div>
 </div>
 
+<script src="../password_toggle.js"></script>
 </body>
 </html>

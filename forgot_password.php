@@ -24,14 +24,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("sss", $token_hash, $expiry, $email);
         $stmt->execute();
 
-        // In a real app, send email here. For now, simulate it.
-        // Assuming the app URL handling logic.
-        $resetLink = "http://localhost/car/reset_password.php?token=" . $token;
+        // Initialize PHPMailer
+        require 'vendor/autoload.php';
+        require 'config_mail.php';
         
-        $success_message = "Password reset link has been generated (Simulation): <br> <a href='$resetLink' style='color: white; text-decoration: underline;'>Click here to reset password</a>";
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+        try {
+            //Server settings
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USERNAME;
+            $mail->Password   = SMTP_PASSWORD;
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+
+            //Recipients
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($email);
+
+            //Content
+            $resetLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/reset_password.php?token=" . $token;
+            
+            $mail->isHTML(true);
+            $mail->Subject = 'Password Reset Request';
+            $mail->Body    = "Click the link <br> <a href='$resetLink'>$resetLink</a> <br> to reset your password. This link expires in 30 minutes.";
+            $mail->AltBody = "Click the link to reset your password: $resetLink";
+
+            $mail->send();
+            $success_message = "A reset link has been sent to your email.";
+        } catch (Exception $e) {
+            $error_message = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
     } else {
-        // Don't reveal if user exists or not for security, but for this project maybe it's fine.
-        // Let's be generic.
+        // Generic message for security
         $success_message = "If an account with that email exists, a reset link has been sent.";
     }
 }
