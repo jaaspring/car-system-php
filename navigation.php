@@ -183,9 +183,22 @@ $prefix = ($current_dir === 'admin' || $current_dir === 'customer') ? '../' : ''
         </nav>
     </div>
     <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
-        <?php if ($role !== 'admin'): ?>
+        <!-- User Profile Pic & Name -->
+        <?php 
+        $uid = $_SESSION['user_id'] ?? 0; // Assuming session has user_id
+        ?>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="<?= $prefix ?>display_profile_pic.php?id=<?= $uid ?>&t=<?= time() ?>" 
+                 alt="Profile" 
+                 style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff;">
+        </div>
+
+        <?php if ($role === 'admin'): ?>
+            <a href="<?= $prefix ?>admin/settings.php" class="nav-link">Settings</a>
+        <?php else: ?>
             <a href="<?= $prefix ?>customer/settings.php" class="nav-link">Settings</a>
         <?php endif; ?>
+        
         <a href="<?= $prefix ?>logout.php" class="logout-btn">Logout</a>
     </div>
 </div>
